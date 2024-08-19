@@ -21,9 +21,5 @@ public class MatchmakingService {
         httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_DECLINE);
     }
 
-//    public Object getMatchmakingSearch() {
-//        httpUtils.buildGetRequest(MatchmakingEndpoints.MATCHMAKING_SEARCH);
-//        return
-//    }
 
 }
