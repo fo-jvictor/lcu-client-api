@@ -11,23 +11,24 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import static com.jvictor01.authentication.LeagueClientAuthentication.AUTHORIZATION_TOKEN;
 import static com.jvictor01.authentication.LeagueClientAuthentication.SERVER_PORT;
 
 public class Main {
-    public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
+    public static void main(String[] args) throws IOException, InterruptedException {
 
         LeagueClientAuthentication clientAuthentication = new LeagueClientAuthentication();
         clientAuthentication.connectToLCUApi();
 
-        FrontendWebsocketServer frontendWebsocketServer = new FrontendWebsocketServer();
-        frontendWebsocketServer.connect();
+        final FrontendWebsocketServer websocketServer = new FrontendWebsocketServer();
+        websocketServer.connectAndSendMessage();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+
         server.createContext(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH, new Controller());
+        server.createContext(MatchmakingEndpoints.READY_CHECK_ACCEPT, new Controller());
         server.createContext(MatchmakingEndpoints.READY_CHECK_DECLINE, new Controller());
         server.setExecutor(null);
         server.start();

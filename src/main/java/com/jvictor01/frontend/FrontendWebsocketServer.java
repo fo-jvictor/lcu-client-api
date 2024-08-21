@@ -18,13 +18,14 @@ public class FrontendWebsocketServer {
     private Socket client;
     private OutputStream outputStream;
 
-    public FrontendWebsocketServer() {
+
+    public FrontendWebsocketServer() throws IOException {
 
     }
 
-    public void connect() {
+    public void connectAndSendMessage() {
         try {
-            ServerSocket serverSocket = new ServerSocket(80);
+            final ServerSocket serverSocket = new ServerSocket(80);
             Thread thread = new Thread(() -> {
                 try {
                     client = serverSocket.accept();
@@ -33,17 +34,17 @@ public class FrontendWebsocketServer {
                     outputStream = client.getOutputStream();
                     Scanner scanner = new Scanner(inputStream, "UTF-8");
                     handshake(scanner);
-                    sendMessage("teste");
+                    sendMessage("PARTIDA ENCONTRADA");
                 } catch (IOException ioException) {
                 }
 
             });
 
             thread.start();
-        } catch (IOException e) {
 
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
     }
 
     public void sendMessage(String message) {

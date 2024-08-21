@@ -2,17 +2,20 @@ package com.jvictor01.authentication;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.frontend.FrontendWebsocketServer;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
 public class WebsocketAuthentication extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final FrontendWebsocketServer websocketServer = new FrontendWebsocketServer();
     private static final String MATCH_FOUND = "Found";
 
-    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders) {
+    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders) throws IOException {
         super(serverUri, httpHeaders);
     }
 
@@ -35,7 +38,7 @@ public class WebsocketAuthentication extends WebSocketClient {
             var searchState = data.get("searchState");
 
             if (data != null && searchState != null && MATCH_FOUND.equalsIgnoreCase(searchState.textValue())) {
-                System.out.println("Match found?");
+//                websocketServer.connectAndSendMessage();
             }
 
         } catch (Exception e) {
