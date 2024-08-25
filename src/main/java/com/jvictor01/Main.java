@@ -6,8 +6,10 @@ import com.jvictor01.frontend.FrontendWebsocketServer;
 import com.jvictor01.lobby.LobbyEndpoints;
 import com.jvictor01.matchmaking.MatchmakingEndpoints;
 import com.jvictor01.teste.Controller;
+import com.jvictor01.trust_manager.SSLContextFactory;
 import com.sun.net.httpserver.HttpServer;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -37,8 +39,15 @@ public class Main {
         try {
             URI serverUri = new URI("wss://127.0.0.1:" + SERVER_PORT + "/");
             var headers = Map.of("Authorization", "Basic " + AUTHORIZATION_TOKEN);
+
+            SSLContext context = SSLContextFactory.createTrustAllSSLContext();
+
             WebsocketAuthentication client = new WebsocketAuthentication(serverUri, headers);
+            client.setSocketFactory(context.getSocketFactory());
+
             client.connectBlocking();
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
