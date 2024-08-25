@@ -23,21 +23,21 @@ public class FrontendWebsocketServer {
 
     }
 
-    public void connectAndSendMessage() {
+    public void connect() {
         try {
-            final ServerSocket serverSocket = new ServerSocket(80);
+            final ServerSocket serverSocket = new ServerSocket(200);
             Thread thread = new Thread(() -> {
-                try {
-                    client = serverSocket.accept();
-                    System.out.println("Client connected: ");
-                    InputStream inputStream = client.getInputStream();
-                    outputStream = client.getOutputStream();
-                    Scanner scanner = new Scanner(inputStream, "UTF-8");
-                    handshake(scanner);
-                    sendMessage("PARTIDA ENCONTRADA");
-                } catch (IOException ioException) {
+                while (true) {
+                    try {
+                        client = serverSocket.accept();
+                        System.out.println("Client connected: ");
+                        InputStream inputStream = client.getInputStream();
+                        outputStream = client.getOutputStream();
+                        Scanner scanner = new Scanner(inputStream, "UTF-8");
+                        handshake(scanner);
+                    } catch (IOException ioException) {
+                    }
                 }
-
             });
 
             thread.start();
@@ -47,24 +47,29 @@ public class FrontendWebsocketServer {
         }
     }
 
-    public void sendMessage(String message) {
-        try {
-            byte[] rawData = message.getBytes(StandardCharsets.UTF_8);
-            int frameSize = rawData.length + 2;
+    public synchronized void sendMessage(String message) {
+        if (outputStream != null && !client.isClosed() && client != null) {
+            try {
+                byte[] rawData = message.getBytes(StandardCharsets.UTF_8);
+                int frameSize = rawData.length + 2;
 
-            byte[] frame = new byte[frameSize];
-            frame[0] = (byte) 0x81;
-            frame[1] = (byte) rawData.length;
-            System.arraycopy(rawData, 0, frame, 2, rawData.length);
+                byte[] frame = new byte[frameSize];
+                frame[0] = (byte) 0x81;
+                frame[1] = (byte) rawData.length;
+                System.arraycopy(rawData, 0, frame, 2, rawData.length);
 
-            outputStream.write(frame);
-            outputStream.flush();
+                outputStream.write(frame);
+                outputStream.flush();
 
-            System.out.println("message sent: " + message);
+                System.out.println("message sent: " + message);
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+        System.err.println("No client connected, unable to send message: " + message);
+
     }
 
     private void handshake(Scanner scanner) {

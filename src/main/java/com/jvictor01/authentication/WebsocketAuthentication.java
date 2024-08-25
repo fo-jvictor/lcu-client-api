@@ -12,11 +12,12 @@ import java.util.Map;
 
 public class WebsocketAuthentication extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private final FrontendWebsocketServer websocketServer = new FrontendWebsocketServer();
+    private final FrontendWebsocketServer frontendWebsocketServer;
     private static final String MATCH_FOUND = "Found";
 
-    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders) throws IOException {
+    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketServer frontendWebsocketServer) throws IOException {
         super(serverUri, httpHeaders);
+        this.frontendWebsocketServer = frontendWebsocketServer;
     }
 
     @Override
@@ -38,7 +39,7 @@ public class WebsocketAuthentication extends WebSocketClient {
             var searchState = data.get("searchState");
 
             if (data != null && searchState != null && MATCH_FOUND.equalsIgnoreCase(searchState.textValue())) {
-//                websocketServer.connectAndSendMessage();
+                frontendWebsocketServer.sendMessage("MATCH FOUND");
             }
 
         } catch (Exception e) {

@@ -24,9 +24,6 @@ public class Main {
         LeagueClientAuthentication clientAuthentication = new LeagueClientAuthentication();
         clientAuthentication.connectToLCUApi();
 
-        final FrontendWebsocketServer websocketServer = new FrontendWebsocketServer();
-        websocketServer.connectAndSendMessage();
-
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
         server.createContext(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH, new Controller());
@@ -36,15 +33,18 @@ public class Main {
         server.start();
         System.out.println("SERVER STARTED ON PORT 8080");
 
+        final FrontendWebsocketServer websocketServer = new FrontendWebsocketServer();
+        websocketServer.connect();
+
+
         try {
             URI serverUri = new URI("wss://127.0.0.1:" + SERVER_PORT + "/");
             var headers = Map.of("Authorization", "Basic " + AUTHORIZATION_TOKEN);
 
             SSLContext context = SSLContextFactory.createTrustAllSSLContext();
 
-            WebsocketAuthentication client = new WebsocketAuthentication(serverUri, headers);
+            WebsocketAuthentication client = new WebsocketAuthentication(serverUri, headers, websocketServer);
             client.setSocketFactory(context.getSocketFactory());
-
             client.connectBlocking();
 
 
