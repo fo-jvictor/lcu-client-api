@@ -2,6 +2,7 @@ package com.jvictor01.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.trust_manager.SSLContextFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,7 +18,9 @@ public class HttpUtils {
     private final ObjectMapper objectMapper;
 
     public HttpUtils() {
-        this.httpClient = HttpClient.newHttpClient();
+        this.httpClient = HttpClient.newBuilder()
+                .sslContext(SSLContextFactory.createTrustAllSSLContext())
+                .build();
         this.objectMapper = new ObjectMapper();
     }
 
@@ -106,6 +109,7 @@ public class HttpUtils {
             throw new RuntimeException(e);
         }
     }
+
     private String writeRequestBody(Object object) {
         try {
             return objectMapper.writeValueAsString(object);

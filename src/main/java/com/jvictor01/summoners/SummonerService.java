@@ -68,7 +68,7 @@ public class SummonerService {
 
     }
 
-    public void loadOwnSummonerDetails() {
-        return;
+    public Summoner loadOwnSummonerDetails() {
+        return httpUtils.buildGetRequestBy(SummonerEndpoints.CURRENT_SUMMONER, Summoner.class);
     }
 }
