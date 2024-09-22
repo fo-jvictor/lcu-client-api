@@ -39,6 +39,22 @@ public class HttpUtils {
         }
     }
 
+    public HttpResponse<String> buildPostRequest(String path, Object requestBody) {
+        var requestBodyString = writeRequestBody(requestBody);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LCU_BASE_ENDPOINT + SERVER_PORT + path))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + AUTHORIZATION_TOKEN)
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(requestBodyString, StandardCharsets.UTF_8))
+                .build();
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public <T> T buildPostRequestBy(String path, Object body, Class<T> type) {
         String requestBody = writeRequestBody(body);
         HttpRequest request = HttpRequest.newBuilder()
@@ -97,6 +113,22 @@ public class HttpUtils {
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             return readResponseBody(response, expectedResponse);
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public HttpResponse<String> buildPutRequest(String path, Object requestBody) {
+        var requestBodyString = writeRequestBody(requestBody);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LCU_BASE_ENDPOINT + SERVER_PORT + path))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + AUTHORIZATION_TOKEN)
+                .header("Accept", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(requestBodyString, StandardCharsets.UTF_8))
+                .build();
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

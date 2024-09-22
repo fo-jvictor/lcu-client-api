@@ -19,7 +19,7 @@ public class FrontendWebsocketServer {
     private OutputStream outputStream;
 
 
-    public FrontendWebsocketServer() throws IOException {
+    public FrontendWebsocketServer() {
 
     }
 
@@ -30,7 +30,7 @@ public class FrontendWebsocketServer {
                 while (true) {
                     try {
                         client = serverSocket.accept();
-                        System.out.println("Client connected: ");
+                        System.out.println("Client connected: " + client.getInetAddress());
                         InputStream inputStream = client.getInputStream();
                         outputStream = client.getOutputStream();
                         Scanner scanner = new Scanner(inputStream, "UTF-8");
