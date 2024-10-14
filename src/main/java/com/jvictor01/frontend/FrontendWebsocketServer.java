@@ -33,7 +33,7 @@ public class FrontendWebsocketServer {
                         System.out.println("Client connected: " + client.getInetAddress());
                         InputStream inputStream = client.getInputStream();
                         outputStream = client.getOutputStream();
-                        Scanner scanner = new Scanner(inputStream, "UTF-8");
+                        Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8);
                         handshake(scanner);
                     } catch (IOException ioException) {
                     }
@@ -48,7 +48,7 @@ public class FrontendWebsocketServer {
     }
 
     public synchronized void sendMessage(String message) {
-        if (outputStream != null && !client.isClosed() && client != null) {
+        if (outputStream != null && client != null && !client.isClosed()) {
             try {
                 byte[] rawData = message.getBytes(StandardCharsets.UTF_8);
                 int frameSize = rawData.length + 2;

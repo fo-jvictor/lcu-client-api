@@ -3,6 +3,8 @@ package com.jvictor01.authentication;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,6 +49,12 @@ public class LeagueClientAuthentication {
         String passwordToBeEncoded = "riot:" + input;
         byte[] encodedBytes = Base64.getEncoder().encode(passwordToBeEncoded.getBytes());
         return new String(encodedBytes);
+    }
+
+
+    public static String kkkvsf() throws UnknownHostException {
+        InetAddress inetAddress = InetAddress.getLocalHost();
+        return inetAddress.getHostAddress();
     }
 
 

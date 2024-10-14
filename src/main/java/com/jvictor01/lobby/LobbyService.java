@@ -1,20 +1,30 @@
 package com.jvictor01.lobby;
 
+import com.jvictor01.summoners.Summoner;
+import com.jvictor01.summoners.SummonerNotFoundException;
+import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
+import java.net.http.HttpResponse;
 import java.util.List;
 import java.util.Optional;
 
 public class LobbyService {
     private final HttpUtils httpUtils;
+    private final SummonerService summonerService;
 
     public LobbyService() {
         this.httpUtils = new HttpUtils();
+        this.summonerService = new SummonerService();
     }
 
-    public void queue() {
+    public void matchmakingSearch() {
         System.out.println("IN QUEUE:");
         httpUtils.buildPostRequest(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH);
+    }
+
+    public HttpResponse<String> cancelMatchmakingSearch() {
+        return httpUtils.buildDeleteRequest(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH);
     }
 
 
@@ -49,10 +59,27 @@ public class LobbyService {
     }
 
 
-//    public void getLobbyMembers() {
-//        List<TeamMember> teamMembers = List.of(httpUtils.buildGetRequestBy(LobbyEndpoints.LOBBY_V2_MEMBERS, TeamMember.class));
-//
-//    }
+    public void getLobbyMembers() {
+
+        List<Invitation> invitations = httpUtils.getLobbyInvitations(LobbyEndpoints.INVITATIONS_V2);
+
+
+    }
+
+    public void postInvitationByNickname(String nickname) {
+        Summoner[] summoners = summonerService.getSummonerDetailsByNickname(nickname);
+
+        if (summoners[0] != null) {
+            Invitation invitation = new Invitation();
+            invitation.setToSummonerId(summoners[0].getSummonerId());
+            invitation.setToSummonerName(summoners[0].getGameName());
+
+            httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, invitation);
+        }
+
+        throw new SummonerNotFoundException("Summoner not found by nickname: " + nickname);
+
+    }
 
 
     public void playAgain() {

@@ -16,6 +16,7 @@ public class SummonerService {
         this.httpUtils = new HttpUtils();
     }
 
+    //nickname format is: ingamename#tag
     public Summoner[] getSummonerDetailsByNickname(String nickname) {
         String requestBody = null;
         try {
@@ -25,12 +26,14 @@ public class SummonerService {
         }
 
         HttpResponse<String> response = httpUtils.buildPostRequest(SummonerEndpoints.getSummonerDetailsEndpoint, requestBody);
+
         try {
             return objectMapper.readValue(response.body(), Summoner[].class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     public Summoner getSummonerByPuuid(String puuid) {
         HttpResponse<String> response = httpUtils.buildGetRequest(SummonerEndpoints.SUMMONER_BY_PUUID + puuid);

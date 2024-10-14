@@ -1,7 +1,9 @@
 package com.jvictor01.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.lobby.Invitation;
 import com.jvictor01.trust_manager.SSLContextFactory;
 
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static com.jvictor01.authentication.LeagueClientAuthentication.*;
 
@@ -87,6 +90,21 @@ public class HttpUtils {
         }
     }
 
+    public HttpResponse<String> buildDeleteRequest(String path) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LCU_BASE_ENDPOINT + SERVER_PORT + path))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + AUTHORIZATION_TOKEN)
+                .header("Accept", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(""))
+                .build();
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public HttpResponse<String> buildGetRequest(String path) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(LCU_BASE_ENDPOINT + SERVER_PORT + path))
@@ -117,6 +135,24 @@ public class HttpUtils {
             throw new RuntimeException(e);
         }
     }
+
+    public List<Invitation> getLobbyInvitations(String path) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LCU_BASE_ENDPOINT + SERVER_PORT + path))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + AUTHORIZATION_TOKEN)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return objectMapper.readValue(response.body(), new TypeReference<List<Invitation>>() {});
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     public HttpResponse<String> buildPutRequest(String path, Object requestBody) {
         var requestBodyString = writeRequestBody(requestBody);

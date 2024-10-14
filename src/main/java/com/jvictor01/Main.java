@@ -2,10 +2,9 @@ package com.jvictor01;
 
 import com.jvictor01.authentication.LeagueClientAuthentication;
 import com.jvictor01.authentication.WebsocketAuthentication;
+import com.jvictor01.controllers.LobbyController;
+import com.jvictor01.controllers.MatchmakingController;
 import com.jvictor01.frontend.FrontendWebsocketServer;
-import com.jvictor01.lobby.LobbyEndpoints;
-import com.jvictor01.matchmaking.MatchmakingEndpoints;
-import com.jvictor01.teste.Controller;
 import com.jvictor01.trust_manager.SSLContextFactory;
 import com.sun.net.httpserver.HttpServer;
 
@@ -26,9 +25,9 @@ public class Main {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-        server.createContext(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH, new Controller());
-        server.createContext(MatchmakingEndpoints.READY_CHECK_ACCEPT, new Controller());
-        server.createContext(MatchmakingEndpoints.READY_CHECK_DECLINE, new Controller());
+        server.createContext("/create-lobby", new LobbyController());
+        server.createContext("/search-matchmaking", new MatchmakingController());
+        server.createContext("/update-positions-preference", new LobbyController());
         server.setExecutor(null);
         server.start();
         System.out.println("SERVER STARTED ON PORT 8080");

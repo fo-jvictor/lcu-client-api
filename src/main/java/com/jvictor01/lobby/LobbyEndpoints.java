@@ -6,4 +6,5 @@ public class LobbyEndpoints {
     public static final String POSITION_PREFERENCES = "/lol-lobby/v2/lobby/members/localMember/position-preferences";
     public static final String LOBBY_V2_MEMBERS = "/lol-lobby/v2/lobby/members";
     public static final String LOBBY_V2 = "/lol-lobby/v2/lobby";
+    public static final String INVITATIONS_V2 = "/lol-lobby/v2/lobby/invitations";
 }

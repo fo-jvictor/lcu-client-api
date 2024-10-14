@@ -26,7 +26,10 @@ public class WebsocketAuthentication extends WebSocketClient {
         String matchmakingReadyCheckEvent = """
                 [5, "OnJsonApiEvent_lol-matchmaking_v1_search"]
                 """;
-        this.send(matchmakingReadyCheckEvent);
+        String onJsonApiEvent = """
+                [5, "OnJsonApiEvent"]
+                """;
+        this.send(onJsonApiEvent);
     }
 
     @Override
@@ -38,7 +41,8 @@ public class WebsocketAuthentication extends WebSocketClient {
             var data = eventData.get("data");
             var searchState = data.get("searchState");
 
-            if (data != null && searchState != null && MATCH_FOUND.equalsIgnoreCase(searchState.textValue())) {
+
+            if (searchState != null && MATCH_FOUND.equalsIgnoreCase(searchState.textValue())) {
                 frontendWebsocketServer.sendMessage("MATCH FOUND");
             }
 
