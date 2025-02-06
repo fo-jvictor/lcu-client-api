@@ -1,11 +1,11 @@
 package com.jvictor01.lobby;
 
 import com.jvictor01.summoners.Summoner;
-import com.jvictor01.summoners.SummonerNotFoundException;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
 import java.net.http.HttpResponse;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,9 +18,9 @@ public class LobbyService {
         this.summonerService = new SummonerService();
     }
 
-    public void matchmakingSearch() {
+    public HttpResponse<String> matchmakingSearch() {
         System.out.println("IN QUEUE:");
-        httpUtils.buildPostRequest(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH);
+        return httpUtils.buildPostRequest(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH);
     }
 
     public HttpResponse<String> cancelMatchmakingSearch() {
@@ -58,6 +58,10 @@ public class LobbyService {
 
     }
 
+    public HttpResponse<String> kickSummonerBySummonerId(String summonerId) {
+        String formattedUri = String.format(LobbyEndpoints.KICK_SUMMONER_BY_SUMMONER_ID, summonerId);
+        return httpUtils.buildPostRequest(formattedUri);
+    }
 
     public void getLobbyMembers() {
 
@@ -66,23 +70,16 @@ public class LobbyService {
 
     }
 
-    public void postInvitationByNickname(String nickname) {
-        Summoner[] summoners = summonerService.getSummonerDetailsByNickname(nickname);
+    public HttpResponse<String> postInvitationByNickname(String nickname, String tag) {
+        String puuid = summonerService.getSummonerPuuidByNicknameAndTagLine(nickname, tag);
+        Summoner summoner = summonerService.getSummonerByPuuid(puuid);
 
-        if (summoners[0] != null) {
-            Invitation invitation = new Invitation();
-            invitation.setToSummonerId(summoners[0].getSummonerId());
-            invitation.setToSummonerName(summoners[0].getGameName());
+        Invitation invitation = new Invitation();
+        invitation.setToSummonerId(summoner.getSummonerId());
+        invitation.setToSummonerName(summoner.getGameName());
 
-            httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, invitation);
-        }
-
-        throw new SummonerNotFoundException("Summoner not found by nickname: " + nickname);
-
+        return httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, Collections.singletonList(invitation));
     }
 
 
-    public void playAgain() {
-        httpUtils.buildPostRequest(LobbyEndpoints.PLAY_AGAIN);
-    }
 }

@@ -1,6 +1,7 @@
 package com.jvictor01.summoners;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.utils.HttpUtils;
 
@@ -38,7 +39,11 @@ public class SummonerService {
     public Summoner getSummonerByPuuid(String puuid) {
         HttpResponse<String> response = httpUtils.buildGetRequest(SummonerEndpoints.SUMMONER_BY_PUUID + puuid);
         try {
-            return objectMapper.readValue(response.body(), Summoner.class);
+            Summoner summoner = objectMapper.readValue(response.body(), Summoner.class);
+            if (summoner == null) {
+                throw new SummonerNotFoundException("Summoner not found by puuid: " + puuid);
+            }
+            return summoner;
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -53,12 +58,32 @@ public class SummonerService {
         }
     }
 
-    //Change riot id without bypassing email validation
-    public void changeRiotId(String nickname, String tagline) {
+    public String getSummonerPuuidByNicknameAndTagLine(String gameName, String tagLine) {
+        HttpResponse<String> response =
+                httpUtils.buildGetRequest(SummonerEndpoints.SUMMONER_ALIAS_LOOKUP + "?gameName=" + gameName + "&tagLine=" + tagLine);
+
+        try {
+            JsonNode rootNode = objectMapper.readTree(response.body());
+            JsonNode attributeNode = rootNode.path("puuid");
+
+            if (!attributeNode.isMissingNode()) {
+                return attributeNode.asText();
+            }
+
+            throw new RuntimeException("puuid not found for given gameName: " + gameName + " and tagLine: #" + tagLine);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    //Change riot id bypassing email validation
+    public void changeRiotId(String newNickname, String newTagLine) {
         String requestBody = null;
         Summoner summoner = new Summoner();
-        summoner.setGameName(nickname);
-        summoner.setTagLine(tagline);
+        summoner.setGameName(newNickname);
+        summoner.setTagLine(newTagLine);
 
         try {
             requestBody = objectMapper.writeValueAsString(summoner);

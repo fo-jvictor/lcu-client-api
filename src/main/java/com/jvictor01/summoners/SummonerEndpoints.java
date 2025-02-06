@@ -6,4 +6,5 @@ public class SummonerEndpoints {
     public static final String SUMMONER_BY_PUUID = "/lol-summoner/v2/summoners/puuid/";
     public static final String SUMMONER_BY_ID = "/lol-summoner/v1/summoners/";
     public static final String CURRENT_SUMMONER = "/lol-summoner/v1/current-summoner";
+    public static final String SUMMONER_ALIAS_LOOKUP = "/lol-summoner/v1/alias/lookup";
 }

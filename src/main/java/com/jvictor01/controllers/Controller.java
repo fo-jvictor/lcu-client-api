@@ -50,9 +50,6 @@ public class Controller implements HttpHandler {
                 exchange.sendResponseHeaders(200, "teste".getBytes().length);
             }
 
-            if (LobbyEndpoints.PLAY_AGAIN.contains(exchange.getRequestURI().toString())) {
-                lobbyService.playAgain();
-            }
 
             if (MatchmakingEndpoints.READY_CHECK_ACCEPT.contains(exchange.getRequestURI().toString())) {
                 matchmakingService.postReadyCheckAccept();

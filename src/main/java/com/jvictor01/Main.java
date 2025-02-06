@@ -4,6 +4,7 @@ import com.jvictor01.authentication.LeagueClientAuthentication;
 import com.jvictor01.authentication.WebsocketAuthentication;
 import com.jvictor01.controllers.LobbyController;
 import com.jvictor01.controllers.MatchmakingController;
+import com.jvictor01.controllers.SummonerController;
 import com.jvictor01.frontend.FrontendWebsocketServer;
 import com.jvictor01.trust_manager.SSLContextFactory;
 import com.sun.net.httpserver.HttpServer;
@@ -14,8 +15,8 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Map;
 
-import static com.jvictor01.authentication.LeagueClientAuthentication.AUTHORIZATION_TOKEN;
-import static com.jvictor01.authentication.LeagueClientAuthentication.SERVER_PORT;
+import static com.jvictor01.authentication.LeagueClientAuthentication.LCU_AUTHORIZATION_TOKEN;
+import static com.jvictor01.authentication.LeagueClientAuthentication.LCU_SERVER_PORT;
 
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -27,7 +28,12 @@ public class Main {
 
         server.createContext("/create-lobby", new LobbyController());
         server.createContext("/search-matchmaking", new MatchmakingController());
+        server.createContext("/cancel-search-matchmaking", new MatchmakingController());
         server.createContext("/update-positions-preference", new LobbyController());
+        server.createContext("/invite-summoner", new LobbyController());
+        server.createContext("/remove-summoner", new LobbyController());
+        server.createContext("/search-summoner", new SummonerController());
+
         server.setExecutor(null);
         server.start();
         System.out.println("SERVER STARTED ON PORT 8080");
@@ -37,8 +43,8 @@ public class Main {
 
 
         try {
-            URI serverUri = new URI("wss://127.0.0.1:" + SERVER_PORT + "/");
-            var headers = Map.of("Authorization", "Basic " + AUTHORIZATION_TOKEN);
+            URI serverUri = new URI("wss://127.0.0.1:" + LCU_SERVER_PORT + "/");
+            var headers = Map.of("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN);
 
             SSLContext context = SSLContextFactory.createTrustAllSSLContext();
 
