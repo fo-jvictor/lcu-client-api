@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
+import java.net.http.HttpResponse;
+
 public class MatchmakingService {
     private final HttpUtils httpUtils;;
 
@@ -11,14 +13,14 @@ public class MatchmakingService {
         this.httpUtils = new HttpUtils();
     }
 
-    public void postReadyCheckAccept() {
-        System.out.println("CALLING READY CHECK SERVICE? Thread: " + Thread.currentThread().getName());
-        httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_ACCEPT);
+    public HttpResponse<String> postReadyCheckAccept() {
+        System.out.println("CALLING READY CHECK SERVICE");
+        return httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_ACCEPT);
     }
 
-    public void postReadyCheckDecline() {
+    public HttpResponse<String> postReadyCheckDecline() {
         System.out.println("DECLINING MATCH");
-        httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_DECLINE);
+        return httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_DECLINE);
     }
 
 

@@ -3,46 +3,46 @@ package com.jvictor01.summoners;
 import org.json.JSONObject;
 
 public class Summoner {
-    private int accountId;
+    private Long accountId;
     private String displayName;
     private String gameName;
     private String internalName;
     private boolean nameChangeFlag;
-    private int percentCompleteForNextLevel;
+    private Long percentCompleteForNextLevel;
     private String privacy;
-    private int profileIconId;
+    private Long profileIconId;
     private String puuid;
     private RerollPoints rerollPoints;
-    private int summonerId;
-    private int summonerLevel;
+    private Long summonerId;
+    private Long summonerLevel;
     private String tagLine;
     private boolean unnamed;
-    private int xpSinceLastLevel;
-    private int xpUntilNextLevel;
+    private Long xpSinceLastLevel;
+    private Long xpUntilNextLevel;
 
     public Summoner(JSONObject jsonObject) {
-        this.accountId = jsonObject.getInt("accountId");
+        this.accountId = jsonObject.getLong("accountId");
         this.displayName = jsonObject.getString("displayName");
         this.gameName = jsonObject.getString("gameName");
         this.internalName = jsonObject.getString("internalName");
         this.nameChangeFlag = jsonObject.getBoolean("nameChangeFlag");
-        this.percentCompleteForNextLevel = jsonObject.getInt("percentCompleteForNextLevel");
+        this.percentCompleteForNextLevel = jsonObject.getLong("percentCompleteForNextLevel");
         this.privacy = jsonObject.getString("privacy");
-        this.profileIconId = jsonObject.getInt("profileIconId");
+        this.profileIconId = jsonObject.getLong("profileIconId");
         this.puuid = jsonObject.getString("puuid");
-        this.summonerId = jsonObject.getInt("summonerId");
-        this.summonerLevel = jsonObject.getInt("summonerLevel");
+        this.summonerId = jsonObject.getLong("summonerId");
+        this.summonerLevel = jsonObject.getLong("summonerLevel");
         this.tagLine = jsonObject.getString("tagLine");
         this.unnamed = jsonObject.getBoolean("unnamed");
-        this.xpSinceLastLevel = jsonObject.getInt("xpSinceLastLevel");
-        this.xpUntilNextLevel = jsonObject.getInt("xpUntilNextLevel");
+        this.xpSinceLastLevel = jsonObject.getLong("xpSinceLastLevel");
+        this.xpUntilNextLevel = jsonObject.getLong("xpUntilNextLevel");
         this.rerollPoints = new RerollPoints(jsonObject.getJSONObject("rerollPoints"));
     }
 
     public Summoner() {
     }
 
-    public void setAccountId(int accountId) {
+    public void setAccountId(Long accountId) {
         this.accountId = accountId;
     }
 
@@ -62,7 +62,7 @@ public class Summoner {
         this.nameChangeFlag = nameChangeFlag;
     }
 
-    public void setPercentCompleteForNextLevel(int percentCompleteForNextLevel) {
+    public void setPercentCompleteForNextLevel(Long percentCompleteForNextLevel) {
         this.percentCompleteForNextLevel = percentCompleteForNextLevel;
     }
 
@@ -70,7 +70,7 @@ public class Summoner {
         this.privacy = privacy;
     }
 
-    public void setProfileIconId(int profileIconId) {
+    public void setProfileIconId(Long profileIconId) {
         this.profileIconId = profileIconId;
     }
 
@@ -82,11 +82,11 @@ public class Summoner {
         this.rerollPoints = rerollPoints;
     }
 
-    public void setSummonerId(int summonerId) {
+    public void setSummonerId(Long summonerId) {
         this.summonerId = summonerId;
     }
 
-    public void setSummonerLevel(int summonerLevel) {
+    public void setSummonerLevel(Long summonerLevel) {
         this.summonerLevel = summonerLevel;
     }
 
@@ -98,15 +98,15 @@ public class Summoner {
         this.unnamed = unnamed;
     }
 
-    public void setXpSinceLastLevel(int xpSinceLastLevel) {
+    public void setXpSinceLastLevel(Long xpSinceLastLevel) {
         this.xpSinceLastLevel = xpSinceLastLevel;
     }
 
-    public void setXpUntilNextLevel(int xpUntilNextLevel) {
+    public void setXpUntilNextLevel(Long xpUntilNextLevel) {
         this.xpUntilNextLevel = xpUntilNextLevel;
     }
 
-    public int getAccountId() {
+    public Long getAccountId() {
         return accountId;
     }
 
@@ -126,7 +126,7 @@ public class Summoner {
         return nameChangeFlag;
     }
 
-    public int getPercentCompleteForNextLevel() {
+    public Long getPercentCompleteForNextLevel() {
         return percentCompleteForNextLevel;
     }
 
@@ -134,7 +134,7 @@ public class Summoner {
         return privacy;
     }
 
-    public int getProfileIconId() {
+    public Long getProfileIconId() {
         return profileIconId;
     }
 
@@ -146,11 +146,11 @@ public class Summoner {
         return rerollPoints;
     }
 
-    public int getSummonerId() {
+    public Long getSummonerId() {
         return summonerId;
     }
 
-    public int getSummonerLevel() {
+    public Long getSummonerLevel() {
         return summonerLevel;
     }
 
@@ -162,11 +162,11 @@ public class Summoner {
         return unnamed;
     }
 
-    public int getXpSinceLastLevel() {
+    public Long getXpSinceLastLevel() {
         return xpSinceLastLevel;
     }
 
-    public int getXpUntilNextLevel() {
+    public Long getXpUntilNextLevel() {
         return xpUntilNextLevel;
     }
 

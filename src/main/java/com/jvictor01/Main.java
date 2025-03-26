@@ -29,10 +29,14 @@ public class Main {
         server.createContext("/create-lobby", new LobbyController());
         server.createContext("/search-matchmaking", new MatchmakingController());
         server.createContext("/cancel-search-matchmaking", new MatchmakingController());
+        server.createContext("/matchmaking/accept", new MatchmakingController());
+        server.createContext("/matchmaking/decline", new MatchmakingController());
+
         server.createContext("/update-positions-preference", new LobbyController());
         server.createContext("/invite-summoner", new LobbyController());
         server.createContext("/remove-summoner", new LobbyController());
         server.createContext("/search-summoner", new SummonerController());
+        server.createContext("/summoners/myself", new SummonerController());
 
         server.setExecutor(null);
         server.start();

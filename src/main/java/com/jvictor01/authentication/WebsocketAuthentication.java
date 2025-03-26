@@ -3,6 +3,7 @@ package com.jvictor01.authentication;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.frontend.FrontendWebsocketServer;
+import com.jvictor01.lcu_web_socket.LcuWebsocketEvents;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -23,13 +24,8 @@ public class WebsocketAuthentication extends WebSocketClient {
     @Override
     public void onOpen(ServerHandshake handshakedata) {
         System.out.println("Connected to LCU WebSocket");
-        String matchmakingReadyCheckEvent = """
-                [5, "OnJsonApiEvent_lol-matchmaking_v1_search"]
-                """;
-        String onJsonApiEvent = """
-                [5, "OnJsonApiEvent"]
-                """;
-        this.send(onJsonApiEvent);
+        this.send(LcuWebsocketEvents.LOBBY_INFORMATION);
+        this.send(LcuWebsocketEvents.MATCHMAKING_READY_CHECK);
     }
 
     @Override
@@ -44,6 +40,7 @@ public class WebsocketAuthentication extends WebSocketClient {
 
             if (searchState != null && MATCH_FOUND.equalsIgnoreCase(searchState.textValue())) {
                 frontendWebsocketServer.sendMessage("MATCH FOUND");
+                Thread.sleep(500);
             }
 
         } catch (Exception e) {

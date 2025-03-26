@@ -18,7 +18,6 @@ public class FrontendWebsocketServer {
     private Socket client;
     private OutputStream outputStream;
 
-
     public FrontendWebsocketServer() {
 
     }
@@ -92,6 +91,7 @@ public class FrontendWebsocketServer {
                             + "Sec-WebSocket-Accept: " + acceptKey + "\r\n\r\n";
 
                     outputStream.write(response.getBytes(StandardCharsets.UTF_8));
+                    outputStream.flush();
                     System.out.println("message sent: " + response);
                 }
 
