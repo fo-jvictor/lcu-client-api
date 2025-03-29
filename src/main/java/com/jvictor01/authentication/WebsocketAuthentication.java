@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.frontend.FrontendWebsocketServer;
 import com.jvictor01.lcu_web_socket.LcuWebsocketEvents;
+import com.jvictor01.trust_manager.SSLContextFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -16,7 +17,7 @@ public class WebsocketAuthentication extends WebSocketClient {
     private final FrontendWebsocketServer frontendWebsocketServer;
     private static final String MATCH_FOUND = "Found";
 
-    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketServer frontendWebsocketServer) throws IOException {
+    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketServer frontendWebsocketServer) {
         super(serverUri, httpHeaders);
         this.frontendWebsocketServer = frontendWebsocketServer;
     }
@@ -51,6 +52,13 @@ public class WebsocketAuthentication extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         System.out.println("Disconnected from LCU WebSocket. Code: " + code + ", Reason: " + reason);
+        try {
+            Thread.sleep(5000);
+            this.setSocketFactory(SSLContextFactory.createTrustAllSSLContext().getSocketFactory());
+            this.connectBlocking();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

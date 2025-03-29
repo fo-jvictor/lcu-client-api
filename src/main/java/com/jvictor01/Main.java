@@ -2,11 +2,13 @@ package com.jvictor01;
 
 import com.jvictor01.authentication.LeagueClientAuthentication;
 import com.jvictor01.authentication.WebsocketAuthentication;
+import com.jvictor01.controllers.GameFlowController;
 import com.jvictor01.controllers.LobbyController;
 import com.jvictor01.controllers.MatchmakingController;
 import com.jvictor01.controllers.SummonerController;
 import com.jvictor01.frontend.FrontendWebsocketServer;
 import com.jvictor01.trust_manager.SSLContextFactory;
+import com.jvictor01.utils.LeagueProcessUtils;
 import com.sun.net.httpserver.HttpServer;
 
 import javax.net.ssl.SSLContext;
@@ -21,7 +23,9 @@ import static com.jvictor01.authentication.LeagueClientAuthentication.LCU_SERVER
 public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
 
+        LeagueProcessUtils.setUpLeagueClient();
         LeagueClientAuthentication clientAuthentication = new LeagueClientAuthentication();
+
         clientAuthentication.connectToLCUApi();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -37,6 +41,8 @@ public class Main {
         server.createContext("/remove-summoner", new LobbyController());
         server.createContext("/search-summoner", new SummonerController());
         server.createContext("/summoners/myself", new SummonerController());
+
+        server.createContext("/gameflow/session", new GameFlowController());
 
         server.setExecutor(null);
         server.start();

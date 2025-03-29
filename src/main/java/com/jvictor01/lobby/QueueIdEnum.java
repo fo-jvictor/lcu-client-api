@@ -3,6 +3,7 @@ package com.jvictor01.lobby;
 import java.util.Arrays;
 
 public enum QueueIdEnum {
+    //TODO: Add all queue ids
     ARAM(450),
     RANKED_FLEX(440),
     RANKED_SOLO_DUO(420);

@@ -1,7 +1,8 @@
 package com.jvictor01.gameflow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
 import java.net.http.HttpResponse;
@@ -12,18 +13,28 @@ import static com.jvictor01.gameflow.GameflowEndpoints.SESSION_URL;
 public class GameflowService {
     private final HttpUtils httpUtils;
     private final ObjectMapper objectMapper;
-    private final SummonerService summonerService;
 
     public GameflowService() {
-        this.objectMapper = new ObjectMapper();
         this.httpUtils = new HttpUtils();
-        this.summonerService = new SummonerService();
+        this.objectMapper = new ObjectMapper();
     }
 
-    public void getGameFlowSession() {
-        HttpResponse<String> response = httpUtils.buildGetRequest(SESSION_URL);
-        System.out.println(response.body());
+    public String getGameFlowSession() {
+        HttpResponse<String> gameFlowSession = httpUtils.buildGetRequest(SESSION_URL);
+
+        if (gameFlowSession.statusCode() != 200) {
+            throw new RuntimeException("Failed to get game flow session: " + gameFlowSession.body());
+        }
+
+        try {
+            JsonNode jsonNode = objectMapper.readTree(gameFlowSession.body());
+            String phase = jsonNode.get("phase").asText();
+            return GameflowStateEnum.getFromString(phase).toString();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error processing JSON response", e);
+        }
     }
+
 
     public void reconnect() {
         HttpResponse<String> response = httpUtils.buildPostRequest(RECONNECT_URL);

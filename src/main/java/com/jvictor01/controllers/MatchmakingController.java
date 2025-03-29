@@ -38,6 +38,7 @@ public class MatchmakingController implements HttpHandler {
 
         if ("/matchmaking/accept".equalsIgnoreCase(exchange.getRequestURI().toString())) {
             HttpResponse<String> stringHttpResponse = matchmakingService.postReadyCheckAccept();
+            //TODO: create a service to handle the error response from LCU
             exchange.sendResponseHeaders(stringHttpResponse.statusCode(), stringHttpResponse.body().length());
         }
 
