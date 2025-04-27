@@ -1,6 +1,6 @@
 # 🧩 lcu-client-api
 
-Este projeto é responsável por estabelecer uma conexão local com a League Client API (LCU API) do League of Legends.
+Este projeto é responsável por estabelecer uma conexão local com a League Client Update API (LCU API) do League of Legends.
 Ele expõe uma API REST para que outras aplicações possam acessar informações do client do jogo em tempo real.
 
 🚀 Tecnologias Utilizadas
