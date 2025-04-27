@@ -66,3 +66,9 @@ HttpClient client = HttpClient.newBuilder()
   - Inscrição e escuta de **todos os eventos** emitidos pelo client do League of Legends.
   - Reação em tempo real a mudanças como criação de lobby, início de partidas, alterações no status dos jogadores, entre outros.
 
+## ✨ Melhorias Futuras
+- Adição de novos endpoints da LCU para expandir a quantidade de dados disponíveis (ex.: informações de partidas ranqueadas, histórico de partidas, personalização de runas).
+- Refatoração da estrutura do projeto visando maior modularização, clareza e escalabilidade.
+- Melhor tratamento de reconexão automática ao WebSocket em caso de quedas.
+- Melhor tratamento de erros e respostas HTTP, retornando mensagens mais amigáveis.
+
