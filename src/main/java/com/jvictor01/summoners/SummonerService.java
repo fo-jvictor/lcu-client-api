@@ -17,6 +17,10 @@ public class SummonerService {
         this.httpUtils = new HttpUtils();
     }
 
+    public HttpResponse<String> changeSummonerBackgroundProfileImage(BackgroundImageRequest backgroundImageRequest) {
+        return httpUtils.buildPostRequest(SummonerEndpoints.SUMMONER_PROFILE_BACKGROUND, backgroundImageRequest);
+    }
+
     //nickname format is: ingamename#tag
     public Summoner[] getSummonerDetailsByNickname(String nickname) {
         String requestBody = null;

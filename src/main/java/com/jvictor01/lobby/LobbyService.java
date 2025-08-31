@@ -5,6 +5,7 @@ import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,6 @@ public class LobbyService {
     }
 
     public HttpResponse<String> matchmakingSearch() {
-        System.out.println("IN QUEUE:");
         return httpUtils.buildPostRequest(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH);
     }
 
@@ -28,7 +28,7 @@ public class LobbyService {
     }
 
 
-    public void createLobby(LobbySettings lobbySettings) {
+    public HttpResponse<String> createLobby(LobbySettings lobbySettings) {
 
         if (QueueIdEnum.getFromId(lobbySettings.getQueueId()) == null) {
             throw new QueueNotSupportedException("Queue id: " + lobbySettings.getQueueId() + "not supported");
@@ -43,18 +43,18 @@ public class LobbyService {
                         .orElse(List.of()));
 
 
-        httpUtils.buildPostRequest(LobbyEndpoints.LOBBY_V2, lobbySettings);
+        return httpUtils.buildPostRequest(LobbyEndpoints.LOBBY_V2, lobbySettings);
 
     }
 
-    public void updatePositionPreferences(LobbyRoles lobbyRoles) {
+    public HttpResponse<String> updatePositionPreferences(LobbyRoles lobbyRoles) {
 
         if (lobbyRoles.getFirstPreference() == null || lobbyRoles.getFirstPreference().isBlank()
                 || LCULobbyPositionType.UNSELECTED.toString().equals(lobbyRoles.getFirstPreference())) {
             throw new RuntimeException("Primary role empty or unselected");
         }
 
-        httpUtils.buildPutRequest(LobbyEndpoints.POSITION_PREFERENCES, lobbyRoles);
+        return httpUtils.buildPutRequest(LobbyEndpoints.POSITION_PREFERENCES, lobbyRoles);
 
     }
 
@@ -79,6 +79,26 @@ public class LobbyService {
         invitation.setToSummonerName(summoner.getGameName());
 
         return httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, Collections.singletonList(invitation));
+    }
+
+    public HttpResponse<String> postCustomInvitation() {
+        List<String> nicknamesAndTag = List.of("TheNoob45#br1", "BrunnoHG#br1",
+                "Darth Nebro#sith", "Pipo#4117", "uCaule#br1", "dév#GOAT1",
+                "Techy#6925", "Techy#777", "não sou egirl#TWT");
+
+        List<Invitation> invitations = new ArrayList<>();
+
+        nicknamesAndTag.forEach(curretNicknameAndTag -> {
+            Summoner[] summonerDetailsByNickname = summonerService.getSummonerDetailsByNickname(curretNicknameAndTag);
+            Summoner summoner = summonerDetailsByNickname[0];
+            Invitation invitation = new Invitation();
+            invitation.setToSummonerId(summoner.getSummonerId());
+            invitation.setToSummonerName(summoner.getGameName());
+            invitations.add(invitation);
+        });
+
+        return httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, invitations);
+
     }
 
 

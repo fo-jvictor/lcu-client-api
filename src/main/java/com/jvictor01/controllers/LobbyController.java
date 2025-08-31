@@ -3,12 +3,12 @@ package com.jvictor01.controllers;
 import com.jvictor01.lobby.LobbyRoles;
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.lobby.LobbySettings;
+import com.jvictor01.utils.JsonBodyParser;
+import com.jvictor01.utils.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLDecoder;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -17,49 +17,46 @@ import java.util.Map;
 
 public class LobbyController implements HttpHandler {
 
-    private final LobbyService lobbyService;
-
-    public LobbyController() {
-        this.lobbyService = new LobbyService();
-    }
+    private final LobbyService lobbyService = new LobbyService();
+    private final String basePath = "/lobby";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
 
-        if ("/create-lobby".equals(exchange.getRequestURI().toString())) {
-            InputStream requestBody = exchange.getRequestBody();
-            byte[] bytes = requestBody.readAllBytes();
-            JSONObject jsonObject = new JSONObject(new String(bytes));
-            LobbySettings settings = new LobbySettings(jsonObject);
-            lobbyService.createLobby(settings);
-            exchange.sendResponseHeaders(200, 0);
+        String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
+
+        if ("/create-lobby".equals(subpath)) {
+            LobbySettings lobbySettings = JsonBodyParser.toDto(exchange, LobbySettings::new);
+            HttpResponse<String> response = lobbyService.createLobby(lobbySettings);
+            ResponseUtils.send(exchange, response.statusCode());
         }
 
-        if ("/update-positions-preference".contains(exchange.getRequestURI().getPath())) {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-            InputStream requestBody = exchange.getRequestBody();
-            byte[] bytes = requestBody.readAllBytes();
-            JSONObject jsonObject = new JSONObject(new String(bytes));
-            LobbyRoles lobbyRoles = new LobbyRoles(jsonObject);
-            lobbyService.updatePositionPreferences(lobbyRoles);
+        if ("/invite-custom-summoners".contains(subpath)) {
+            lobbyService.postCustomInvitation();
         }
 
-        if ("/invite-summoner".contains(exchange.getRequestURI().getPath())) {
+        if ("/update-positions-preference".contains(subpath)) {
+            LobbyRoles lobbyRoles = JsonBodyParser.toDto(exchange, LobbyRoles::new);
+            HttpResponse<String> response = lobbyService.updatePositionPreferences(lobbyRoles);
+            ResponseUtils.send(exchange, response.statusCode());
+        }
+
+        if ("/invite-summoner".contains(subpath)) {
             String rawQuery = exchange.getRequestURI().getRawQuery();
             Map<String, String> nicknameAndTagline = getNicknameAndTagLineFromParams(rawQuery);
             String nickname = nicknameAndTagline.get("nickname");
             String tag = nicknameAndTagline.get("tagLine");
             HttpResponse<String> response = lobbyService.postInvitationByNickname(nickname, tag);
-            exchange.sendResponseHeaders(response.statusCode(), response.body().length());
+            ResponseUtils.send(exchange, response.statusCode());
         }
 
-        if ("/remove-summoner".contains(exchange.getRequestURI().getPath())) {
+        if ("/remove-summoner".contains(subpath)) {
             String rawQuery = exchange.getRequestURI().getRawQuery();
             String[] splittedUri = rawQuery.split("=");
             String summonerId = splittedUri[1];
             HttpResponse<String> response = lobbyService.kickSummonerBySummonerId(summonerId);
-            exchange.sendResponseHeaders(response.statusCode(), response.body().length());
+            ResponseUtils.send(exchange, response.statusCode());
         }
 
     }

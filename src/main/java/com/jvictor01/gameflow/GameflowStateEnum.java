@@ -3,8 +3,6 @@ package com.jvictor01.gameflow;
 public enum GameflowStateEnum {
 
     //All possible gameflow states
-    //[TerminatedInError, EndOfGame, PreEndOfGame, WaitingForStats, Reconnect, InProgress, FailedToLaunch, GameStart, ChampSelect, ReadyCheck, CheckedIntoTournament, Matchmaking, Lobby]
-
     TERMINATED_IN_ERROR("TerminatedInError"),
     END_OF_GAME("EndOfGame"),
     PRE_END_OF_GAME("PreEndOfGame"),

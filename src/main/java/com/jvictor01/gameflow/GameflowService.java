@@ -23,13 +23,13 @@ public class GameflowService {
         HttpResponse<String> gameFlowSession = httpUtils.buildGetRequest(SESSION_URL);
 
         if (gameFlowSession.statusCode() != 200) {
-            throw new RuntimeException("Failed to get game flow session: " + gameFlowSession.body());
+            return GameflowStateEnum.NONE.getState();
         }
 
         try {
             JsonNode jsonNode = objectMapper.readTree(gameFlowSession.body());
             String phase = jsonNode.get("phase").asText();
-            return GameflowStateEnum.getFromString(phase).toString();
+            return GameflowStateEnum.getFromString(phase).getState();
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Error processing JSON response", e);
         }

@@ -2,6 +2,7 @@ package com.jvictor01.controllers;
 
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.matchmaking.MatchmakingService;
+import com.jvictor01.utils.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -10,39 +11,40 @@ import java.net.http.HttpResponse;
 
 public class MatchmakingController implements HttpHandler {
 
-    private final LobbyService lobbyService;
-    private final MatchmakingService matchmakingService;
-
-    public MatchmakingController() {
-        this.lobbyService = new LobbyService();
-        this.matchmakingService = new MatchmakingService();
-    }
+    private final LobbyService lobbyService = new LobbyService();
+    private final MatchmakingService matchmakingService = new MatchmakingService();
+    private final String basePath = "/matchmaking";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
 
-        if ("/search-matchmaking".equals(exchange.getRequestURI().toString())) {
+        String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
+
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        if ("/search-matchmaking".equals(subpath)) {
             HttpResponse<String> response = lobbyService.matchmakingSearch();
-            exchange.sendResponseHeaders(response.statusCode(), response.body().length());
+            ResponseUtils.send(exchange, response.statusCode(), response.body());
         }
 
-        if ("/cancel-search-matchmaking".equalsIgnoreCase(exchange.getRequestURI().toString())) {
+        if ("/cancel-search-matchmaking".equalsIgnoreCase(subpath)) {
             HttpResponse<String> response = lobbyService.cancelMatchmakingSearch();
-            System.out.println(response);
-            System.out.println("body: " + response.body());
             exchange.sendResponseHeaders(response.statusCode(), response.body().length());
         }
 
-        if ("/matchmaking/accept".equalsIgnoreCase(exchange.getRequestURI().toString())) {
+        if ("/accept".equalsIgnoreCase(subpath)) {
             HttpResponse<String> stringHttpResponse = matchmakingService.postReadyCheckAccept();
             //TODO: create a service to handle the error response from LCU
-            exchange.sendResponseHeaders(stringHttpResponse.statusCode(), stringHttpResponse.body().length());
+            ResponseUtils.send(exchange, stringHttpResponse.statusCode(), stringHttpResponse.body());
         }
 
-        if ("/matchmaking/decline".equalsIgnoreCase(exchange.getRequestURI().toString())) {
+        if ("/decline".equalsIgnoreCase(subpath)) {
             HttpResponse<String> stringHttpResponse = matchmakingService.postReadyCheckDecline();
             exchange.sendResponseHeaders(stringHttpResponse.statusCode(), stringHttpResponse.body().length());
         }
