@@ -1,5 +1,8 @@
 package com.jvictor01.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.lobby.Lobby;
 import com.jvictor01.lobby.LobbyRoles;
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.lobby.LobbySettings;
@@ -9,24 +12,50 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LobbyController implements HttpHandler {
 
     private final LobbyService lobbyService = new LobbyService();
     private final String basePath = "/lobby";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT");
 
         String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
 
-        if ("/create-lobby".equals(subpath)) {
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
+            exchange.sendResponseHeaders(204, -1);
+        }
+
+        if ("/queue-ids".equals(subpath)) {
+            HttpResponse<String> response = lobbyService.getLobbys();
+            List<Lobby> lobbies = objectMapper.readValue(response.body(), new TypeReference<List<Lobby>>() {
+            });
+
+            String jsonResponse = objectMapper.writeValueAsString(lobbies);
+            byte[] bytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
+
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+            exchange.sendResponseHeaders(200, bytes.length);
+
+            OutputStream responseBody = exchange.getResponseBody();
+            responseBody.write(bytes);
+            responseBody.close();
+        }
+
+        if ("/create".equals(subpath)) {
             LobbySettings lobbySettings = JsonBodyParser.toDto(exchange, LobbySettings::new);
             HttpResponse<String> response = lobbyService.createLobby(lobbySettings);
             ResponseUtils.send(exchange, response.statusCode());

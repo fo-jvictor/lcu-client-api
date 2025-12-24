@@ -25,15 +25,16 @@ public class MatchmakingController implements HttpHandler {
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(204, -1);
-            return;
         }
 
-        if ("/search-matchmaking".equals(subpath)) {
+        if ("/search".equals(subpath)) {
+            System.out.println("vsf: " +subpath);
             HttpResponse<String> response = lobbyService.matchmakingSearch();
             ResponseUtils.send(exchange, response.statusCode(), response.body());
         }
 
-        if ("/cancel-search-matchmaking".equalsIgnoreCase(subpath)) {
+        if ("/cancel".equals(subpath)) {
+            System.out.println("cancelando?: " +subpath);
             HttpResponse<String> response = lobbyService.cancelMatchmakingSearch();
             exchange.sendResponseHeaders(response.statusCode(), response.body().length());
         }

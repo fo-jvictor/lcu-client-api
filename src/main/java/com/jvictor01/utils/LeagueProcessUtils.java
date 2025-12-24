@@ -1,12 +1,16 @@
 package com.jvictor01.utils;
 
+import com.jvictor01.authentication.LeagueClientAuthentication;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class LeagueProcessUtils {
 
-    private static void startLeagueClient() {
+    private final LeagueClientAuthentication leagueClientAuthentication = new LeagueClientAuthentication();
+
+    private void startLeagueClient() {
         ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
 
@@ -25,29 +29,46 @@ public class LeagueProcessUtils {
         }
     }
 
-    private static boolean isLeagueRunning() {
+    public boolean isLeagueUxRunning() {
+        Runtime runtime = Runtime.getRuntime();
+        String[] str = {"tasklist"};
         try {
-            Process process = Runtime.getRuntime().exec("tasklist");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            Process exec = runtime.exec(str);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+
             String line;
             while ((line = reader.readLine()) != null) {
-                if (line.toLowerCase().contains("leagueclient.exe")) {
+                if (line.toLowerCase().contains("leagueclientux.exe")) {
+                    System.out.println("League UX is running.");
                     return true;
                 }
             }
+
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return false;
     }
 
-    public static void setUpLeagueClient() {
-        if (!isLeagueRunning()) {
-            startLeagueClient();
-            System.out.println("Starting League of Legends...");
-            setUpLeagueClient();
-        } else {
-            System.out.println("League of Legends is up and running.");
+    public void setUpLeagueClient() {
+        startLeagueClient();
+        boolean leagueUxRunning = isLeagueUxRunning();
+
+        while (!leagueUxRunning) {
+            try {
+                System.out.println("Waiting for League UX to start...");
+                Thread.sleep(5000);
+                leagueUxRunning = isLeagueUxRunning();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        System.out.println("League UX is running.");
+        try {
+            leagueClientAuthentication.connectToLCUApi();
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -1,6 +1,5 @@
 package com.jvictor01;
 
-import com.jvictor01.authentication.LeagueClientAuthentication;
 import com.jvictor01.authentication.WebsocketAuthentication;
 import com.jvictor01.controllers.GameFlowController;
 import com.jvictor01.controllers.LobbyController;
@@ -21,12 +20,10 @@ import static com.jvictor01.authentication.LeagueClientAuthentication.LCU_AUTHOR
 import static com.jvictor01.authentication.LeagueClientAuthentication.LCU_SERVER_PORT;
 
 public class Main {
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException {
 
-        LeagueProcessUtils.setUpLeagueClient();
-        LeagueClientAuthentication clientAuthentication = new LeagueClientAuthentication();
-
-        clientAuthentication.connectToLCUApi();
+        LeagueProcessUtils leagueProcessUtils = new LeagueProcessUtils();
+        leagueProcessUtils.setUpLeagueClient();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 

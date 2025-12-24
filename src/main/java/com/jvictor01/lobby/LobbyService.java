@@ -81,6 +81,10 @@ public class LobbyService {
         return httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, Collections.singletonList(invitation));
     }
 
+    public HttpResponse<String> getLobbys() {
+        return httpUtils.getLobbys(LobbyEndpoints.MAPS_V2);
+    }
+
     public HttpResponse<String> postCustomInvitation() {
         List<String> nicknamesAndTag = List.of("TheNoob45#br1", "BrunnoHG#br1",
                 "Darth Nebro#sith", "Pipo#4117", "uCaule#br1", "dév#GOAT1",
@@ -98,7 +102,6 @@ public class LobbyService {
         });
 
         return httpUtils.buildPostRequest(LobbyEndpoints.INVITATIONS_V2, invitations);
-
     }
 
 

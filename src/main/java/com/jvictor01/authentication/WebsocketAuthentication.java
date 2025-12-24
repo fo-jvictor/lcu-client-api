@@ -1,5 +1,6 @@
 package com.jvictor01.authentication;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.frontend.FrontendWebsocketServer;
@@ -8,9 +9,9 @@ import com.jvictor01.trust_manager.SSLContextFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
+import java.util.Optional;
 
 public class WebsocketAuthentication extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -32,21 +33,19 @@ public class WebsocketAuthentication extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         try {
-            JsonNode jsonArray = objectMapper.readTree(message);
-            JsonNode eventData = jsonArray.get(2);
-
-            var data = eventData.get("data");
-            var searchState = data.get("searchState");
-
-
-            if (searchState != null && MATCH_FOUND.equalsIgnoreCase(searchState.textValue())) {
-                frontendWebsocketServer.sendMessage("MATCH FOUND");
-                Thread.sleep(500);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            Optional.ofNullable(objectMapper.readTree(message))
+                    .map(jsonArray -> jsonArray.get(2))
+                    .map(eventData -> eventData.get("data"))
+                    .map(dataNode -> dataNode.get("searchState"))
+                    .map(JsonNode::textValue)
+                    .filter(MATCH_FOUND::equalsIgnoreCase)
+                    .ifPresent(matchFound -> {
+                        frontendWebsocketServer.sendMessage("MATCH FOUND");
+                    });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     @Override

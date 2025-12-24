@@ -1,44 +1,43 @@
 package com.jvictor01.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.summoners.BackgroundImageRequest;
 import com.jvictor01.summoners.Summoner;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.JsonBodyParser;
+import com.jvictor01.utils.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.http.HttpResponse;
 
 
 public class SummonerController implements HttpHandler {
-    private SummonerService summonerService = new SummonerService();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final SummonerService summonerService = new SummonerService();
     private final String basePath = "/summoners";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
         String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
 
-        if ("/myself".equalsIgnoreCase(subpath)) {
-            exchange.getResponseHeaders().set("Content-Type", "application/json");
-            Summoner summoner = summonerService.loadOwnSummonerDetails();
-            String response = objectMapper.writeValueAsString(summoner);
-
-            OutputStream responseBody = exchange.getResponseBody();
-            exchange.sendResponseHeaders(200, response.getBytes().length);
-            responseBody.write(response.getBytes());
-            responseBody.close();
+        if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
+            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
+            exchange.sendResponseHeaders(204, -1);
         }
 
-        if ("/summoner-profile/background".equalsIgnoreCase(subpath)) {
-            exchange.getResponseHeaders().set("Content-Type", "application/json");
+        if ("/myself".equalsIgnoreCase(subpath)) {
+            Summoner summoner = summonerService.loadOwnSummonerDetails();
+            ResponseUtils.send(exchange, 200, summoner);
+        }
+
+        if ("/profile/background-skin".equalsIgnoreCase(subpath)) {
             BackgroundImageRequest backgroundImageRequest = JsonBodyParser.toDto(exchange, BackgroundImageRequest::new);
-            var response = summonerService.changeSummonerBackgroundProfileImage(backgroundImageRequest);
-            exchange.sendResponseHeaders(response.statusCode(), response.body().getBytes().length);
+            HttpResponse<String> response = summonerService.changeSummonerBackgroundProfileImage(backgroundImageRequest);
+            ResponseUtils.send(exchange, response.statusCode(), response.body());
         }
 
     }

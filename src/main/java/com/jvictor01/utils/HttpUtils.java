@@ -96,7 +96,7 @@ public class HttpUtils {
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(""))
+                .DELETE()
                 .build();
         try {
             return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -147,7 +147,24 @@ public class HttpUtils {
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            return objectMapper.readValue(response.body(), new TypeReference<List<Invitation>>() {});
+            return objectMapper.readValue(response.body(), new TypeReference<List<Invitation>>() {
+            });
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public HttpResponse<String> getLobbys(String path) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        try {
+           return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

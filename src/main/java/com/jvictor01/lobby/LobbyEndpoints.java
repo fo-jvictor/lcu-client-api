@@ -8,6 +8,8 @@ public class LobbyEndpoints {
     public static final String LOBBY_V2 = "/lol-lobby/v2/lobby";
     public static final String INVITATIONS_V2 = "/lol-lobby/v2/lobby/invitations";
     public static final String KICK_SUMMONER_BY_SUMMONER_ID = "/lol-lobby/v2/lobby/members/%s/kick";
+    public static final String MAPS_V1 = "/lol-maps/v1/maps";
+    public static final String MAPS_V2 = "/lol-maps/v2/maps";
 
     //endpoint from riot api, not lcu
     //can be used to fetch information from participants in the lobby in solo duo queue to grab nicknames
