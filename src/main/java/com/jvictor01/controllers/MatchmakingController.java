@@ -13,36 +13,38 @@ public class MatchmakingController implements HttpHandler {
 
     private final LobbyService lobbyService = new LobbyService();
     private final MatchmakingService matchmakingService = new MatchmakingService();
-    private final String basePath = "/matchmaking";
+    private final String basePath = "/api/matchmaking";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "*");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
 
         String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(204, -1);
+            return;
         }
 
         if ("/search".equals(subpath)) {
-            System.out.println("vsf: " +subpath);
             HttpResponse<String> response = lobbyService.matchmakingSearch();
             ResponseUtils.send(exchange, response.statusCode(), response.body());
+            return;
         }
 
         if ("/cancel".equals(subpath)) {
-            System.out.println("cancelando?: " +subpath);
             HttpResponse<String> response = lobbyService.cancelMatchmakingSearch();
             exchange.sendResponseHeaders(response.statusCode(), response.body().length());
+            return;
         }
 
         if ("/accept".equalsIgnoreCase(subpath)) {
             HttpResponse<String> stringHttpResponse = matchmakingService.postReadyCheckAccept();
             //TODO: create a service to handle the error response from LCU
             ResponseUtils.send(exchange, stringHttpResponse.statusCode(), stringHttpResponse.body());
+            return;
         }
 
         if ("/decline".equalsIgnoreCase(subpath)) {

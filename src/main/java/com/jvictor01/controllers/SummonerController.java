@@ -14,24 +14,25 @@ import java.net.http.HttpResponse;
 
 public class SummonerController implements HttpHandler {
     private final SummonerService summonerService = new SummonerService();
-    private final String basePath = "/summoners";
+    private final String basePath = "/api/summoners";
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT");
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
+
         String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
             exchange.sendResponseHeaders(204, -1);
+            return;
         }
 
         if ("/myself".equalsIgnoreCase(subpath)) {
             Summoner summoner = summonerService.loadOwnSummonerDetails();
             ResponseUtils.send(exchange, 200, summoner);
+            return;
         }
 
         if ("/profile/background-skin".equalsIgnoreCase(subpath)) {

@@ -20,21 +20,20 @@ public class ResponseUtils {
 
     public static void send(HttpExchange exchange, int statusCode, Object body) {
         try (OutputStream responseBody = exchange.getResponseBody()) {
+            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+
             if (body != null) {
-                String json;
-                if (body instanceof String) {
-                    json = (String) body;
-                } else {
-                    json = MAPPER.writeValueAsString(body);
-                }
+                String json = (body instanceof String)
+                        ? (String) body
+                        : MAPPER.writeValueAsString(body);
+
                 byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
-                exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
                 exchange.sendResponseHeaders(statusCode, bytes.length);
                 responseBody.write(bytes);
             } else {
-                exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
-                exchange.sendResponseHeaders(statusCode, 0);
+                exchange.sendResponseHeaders(statusCode, -1);
             }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

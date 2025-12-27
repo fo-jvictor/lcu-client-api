@@ -23,20 +23,21 @@ import java.util.Map;
 public class LobbyController implements HttpHandler {
 
     private final LobbyService lobbyService = new LobbyService();
-    private final String basePath = "/lobby";
+    private final String basePath = "/api/lobby";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS, PUT");
+        exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
 
         String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
+        System.out.println("[API] " + exchange.getRequestURI().getPath());
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
-            exchange.getResponseHeaders().add("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
-            exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
             exchange.sendResponseHeaders(204, -1);
+            return;
         }
 
         if ("/queue-ids".equals(subpath)) {
@@ -47,7 +48,6 @@ public class LobbyController implements HttpHandler {
             String jsonResponse = objectMapper.writeValueAsString(lobbies);
             byte[] bytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
 
-            exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
             exchange.sendResponseHeaders(200, bytes.length);
 
             OutputStream responseBody = exchange.getResponseBody();
@@ -59,13 +59,15 @@ public class LobbyController implements HttpHandler {
             LobbySettings lobbySettings = JsonBodyParser.toDto(exchange, LobbySettings::new);
             HttpResponse<String> response = lobbyService.createLobby(lobbySettings);
             ResponseUtils.send(exchange, response.statusCode());
+            return;
         }
 
         if ("/invite-custom-summoners".contains(subpath)) {
             lobbyService.postCustomInvitation();
+            return;
         }
 
-        if ("/update-positions-preference".contains(subpath)) {
+        if (subpath.contains("/update-positions-preference")) {
             LobbyRoles lobbyRoles = JsonBodyParser.toDto(exchange, LobbyRoles::new);
             HttpResponse<String> response = lobbyService.updatePositionPreferences(lobbyRoles);
             ResponseUtils.send(exchange, response.statusCode());
@@ -78,6 +80,7 @@ public class LobbyController implements HttpHandler {
             String tag = nicknameAndTagline.get("tagLine");
             HttpResponse<String> response = lobbyService.postInvitationByNickname(nickname, tag);
             ResponseUtils.send(exchange, response.statusCode());
+            return;
         }
 
         if ("/remove-summoner".contains(subpath)) {

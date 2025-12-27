@@ -11,6 +11,8 @@ public class LobbyEndpoints {
     public static final String MAPS_V1 = "/lol-maps/v1/maps";
     public static final String MAPS_V2 = "/lol-maps/v2/maps";
 
+    public static final String QUEUES = "static.developer.riotgames.com/docs/lol/queues.json";
+
     //endpoint from riot api, not lcu
     //can be used to fetch information from participants in the lobby in solo duo queue to grab nicknames
     public static final String CHAT_V5_PARTICIPANTS = "/chat/v5/participants";
