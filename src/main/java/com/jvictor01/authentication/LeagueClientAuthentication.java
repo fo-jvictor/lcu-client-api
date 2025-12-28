@@ -12,7 +12,7 @@ public class LeagueClientAuthentication {
     public static int LCU_SERVER_PORT;
     public static int RIOT_CLIENT_SERVER_PORT;
     public static String RIOT_CLIENT_AUTH_TOKEN;
-    public static final String LCU_BASE_ENDPOINT = "https://127.0.0.1:";
+    public static final String LOCAL_HOST = "https://127.0.0.1:";
 
     public void connectToLCUApi() throws IOException, InterruptedException {
         String[] getLeagueClientUXInfo = {"wmic", "process", "where", "Name='LeagueClientUx.exe'", "get", "commandLine"};

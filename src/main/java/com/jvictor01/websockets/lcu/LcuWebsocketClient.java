@@ -1,10 +1,9 @@
-package com.jvictor01.authentication;
+package com.jvictor01.websockets.lcu;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.frontend.FrontendWebsocketServer;
-import com.jvictor01.lcu_web_socket.LcuWebsocketEvents;
 import com.jvictor01.trust_manager.SSLContextFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -13,12 +12,12 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
-public class WebsocketAuthentication extends WebSocketClient {
+public class LcuWebsocketClient extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final FrontendWebsocketServer frontendWebsocketServer;
     private static final String MATCH_FOUND = "Found";
 
-    public WebsocketAuthentication(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketServer frontendWebsocketServer) {
+    public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketServer frontendWebsocketServer) {
         super(serverUri, httpHeaders);
         this.frontendWebsocketServer = frontendWebsocketServer;
     }

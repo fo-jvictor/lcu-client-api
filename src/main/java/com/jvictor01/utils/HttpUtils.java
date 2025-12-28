@@ -29,7 +29,7 @@ public class HttpUtils {
 
     public HttpResponse<String> buildPostRequest(String path, String requestBody) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -45,7 +45,7 @@ public class HttpUtils {
     public HttpResponse<String> buildPostRequest(String path, Object requestBody) {
         var requestBodyString = writeRequestBody(requestBody);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -61,7 +61,7 @@ public class HttpUtils {
     public <T> T buildPostRequestBy(String path, Object body, Class<T> type) {
         String requestBody = writeRequestBody(body);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -77,7 +77,7 @@ public class HttpUtils {
 
     public HttpResponse<String> buildPostRequest(String path) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -92,7 +92,7 @@ public class HttpUtils {
 
     public HttpResponse<String> buildDeleteRequest(String path) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -107,7 +107,7 @@ public class HttpUtils {
 
     public HttpResponse<String> buildGetRequest(String path) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -120,9 +120,24 @@ public class HttpUtils {
         }
     }
 
+    public HttpResponse<String> buildGetRequestForRiotClient(String path) {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(LOCAL_HOST + RIOT_CLIENT_SERVER_PORT + path))
+                .header("Content-Type", "application/json")
+                .header("Authorization", "Basic " + RIOT_CLIENT_AUTH_TOKEN)
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+        try {
+            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public <T> T buildGetRequestBy(String path, Class<T> expectedResponse) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -138,7 +153,7 @@ public class HttpUtils {
 
     public List<Invitation> getLobbyInvitations(String path) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -156,7 +171,7 @@ public class HttpUtils {
 
     public HttpResponse<String> getLobbys(String path) {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")
@@ -174,7 +189,7 @@ public class HttpUtils {
     public HttpResponse<String> buildPutRequest(String path, Object requestBody) {
         var requestBodyString = writeRequestBody(requestBody);
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(LCU_BASE_ENDPOINT + LCU_SERVER_PORT + path))
+                .uri(URI.create(LOCAL_HOST + LCU_SERVER_PORT + path))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN)
                 .header("Accept", "application/json")

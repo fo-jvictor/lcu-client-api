@@ -39,7 +39,6 @@ public class LeagueProcessUtils {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.toLowerCase().contains("leagueclientux.exe")) {
-                    System.out.println("League UX is running.");
                     return true;
                 }
             }

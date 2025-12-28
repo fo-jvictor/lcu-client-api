@@ -1,4 +1,4 @@
-package com.jvictor01.lcu_web_socket;
+package com.jvictor01.websockets.lcu;
 
 public class LcuWebsocketEvents {
 

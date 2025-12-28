@@ -1,4 +1,4 @@
-package com.jvictor01.authentication;
+package com.jvictor01.websockets.lcu;
 
 public enum WebSocketEnum {
     SUBSCRIBE(5),
