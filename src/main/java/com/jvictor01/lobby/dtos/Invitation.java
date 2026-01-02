@@ -1,4 +1,4 @@
-package com.jvictor01.lobby;
+package com.jvictor01.lobby.dtos;
 
 public class Invitation {
     private String invitationId;

@@ -1,6 +1,4 @@
-package com.jvictor01.utils;
-
-import com.jvictor01.authentication.LeagueClientAuthentication;
+package com.jvictor01.authentication;
 
 import java.io.BufferedReader;
 import java.io.IOException;

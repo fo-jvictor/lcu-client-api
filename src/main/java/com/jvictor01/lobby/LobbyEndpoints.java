@@ -10,6 +10,7 @@ public class LobbyEndpoints {
     public static final String KICK_SUMMONER_BY_SUMMONER_ID = "/lol-lobby/v2/lobby/members/%s/kick";
     public static final String MAPS_V1 = "/lol-maps/v1/maps";
     public static final String MAPS_V2 = "/lol-maps/v2/maps";
+    public static final String GAME_QUEUES = "/lol-game-queues/v1/queues";
 
     public static final String QUEUES = "static.developer.riotgames.com/docs/lol/queues.json";
 

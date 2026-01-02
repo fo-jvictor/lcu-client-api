@@ -38,6 +38,5 @@ public class GameflowService {
 
     public void reconnect() {
         HttpResponse<String> response = httpUtils.buildPostRequest(RECONNECT_URL);
-        System.out.println(response.body());
     }
 }

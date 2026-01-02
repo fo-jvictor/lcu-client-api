@@ -3,8 +3,8 @@ package com.jvictor01.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.lobby.Invitation;
-import com.jvictor01.trust_manager.SSLContextFactory;
+import com.jvictor01.lobby.dtos.Invitation;
+import com.jvictor01.utils.trust_manager.SSLContextFactory;
 
 import java.io.IOException;
 import java.net.URI;

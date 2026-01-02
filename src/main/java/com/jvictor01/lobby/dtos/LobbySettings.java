@@ -1,4 +1,4 @@
-package com.jvictor01.lobby;
+package com.jvictor01.lobby.dtos;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

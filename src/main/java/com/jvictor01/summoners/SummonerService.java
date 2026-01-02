@@ -3,6 +3,8 @@ package com.jvictor01.summoners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.summoners.dtos.BackgroundImageRequest;
+import com.jvictor01.summoners.dtos.Summoner;
 import com.jvictor01.utils.HttpUtils;
 
 import java.net.http.HttpResponse;

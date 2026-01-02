@@ -1,20 +1,19 @@
-package com.jvictor01.lobby.team_builder;
+package com.jvictor01.lobby.team_builder.dtos;
 
 import org.json.JSONObject;
 
-public class PickOrderSwap {
+public class Trade {
     private int id;
     private int cellId;
     private String state;
 
-    public PickOrderSwap(JSONObject jsonObject) {
+    public Trade(JSONObject jsonObject) {
         this.id = jsonObject.getInt("id");
         this.cellId = jsonObject.getInt("cellId");
         this.state = jsonObject.getString("state");
     }
 
-    public PickOrderSwap() {
-
+    public Trade() {
     }
 
     public void setId(int id) {

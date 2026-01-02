@@ -1,4 +1,4 @@
-package com.jvictor01.lobby;
+package com.jvictor01.lobby.dtos;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.json.JSONObject;

@@ -1,4 +1,4 @@
-package com.jvictor01.trust_manager;
+package com.jvictor01.utils.trust_manager;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;

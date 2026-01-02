@@ -1,4 +1,4 @@
-package com.jvictor01.frontend;
+package com.jvictor01.websockets.frontend_connection;
 
 
 import java.io.IOException;
@@ -14,11 +14,11 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class FrontendWebsocketServer {
+public class FrontendWebsocketConnection {
     private Socket client;
     private OutputStream outputStream;
 
-    public FrontendWebsocketServer() {
+    public FrontendWebsocketConnection() {
 
     }
 

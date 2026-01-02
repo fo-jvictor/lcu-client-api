@@ -3,7 +3,12 @@ package com.jvictor01.authentication;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +63,9 @@ public class LeagueClientAuthentication {
 
         System.out.println("RIOT CLIENT PORT: " + RIOT_CLIENT_SERVER_PORT);
         System.out.println("RIOT CLIENT AUTH TOKEN: " + RIOT_CLIENT_AUTH_TOKEN);
+
+        System.out.println("\nAccess the following url via mobile: " + getIp() + ":8080\n");
+
         process.waitFor();
         reader.close();
     }
@@ -66,6 +74,27 @@ public class LeagueClientAuthentication {
         String passwordToBeEncoded = "riot:" + input;
         byte[] encodedBytes = Base64.getEncoder().encode(passwordToBeEncoded.getBytes());
         return new String(encodedBytes);
+    }
+
+    public String getIp() throws SocketException {
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+
+        while (interfaces.hasMoreElements()) {
+            NetworkInterface net = interfaces.nextElement();
+
+            if (!net.isUp() || net.isLoopback()) continue;
+
+            Enumeration<InetAddress> addresses = net.getInetAddresses();
+
+            while (addresses.hasMoreElements()) {
+                InetAddress addr = addresses.nextElement();
+
+                if (addr instanceof Inet4Address) {
+                    return addr.getHostAddress();
+                }
+            }
+        }
+        return "";
     }
 
 

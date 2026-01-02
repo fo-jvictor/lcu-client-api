@@ -1,7 +1,7 @@
 package com.jvictor01.controllers;
 
-import com.jvictor01.summoners.BackgroundImageRequest;
-import com.jvictor01.summoners.Summoner;
+import com.jvictor01.summoners.dtos.BackgroundImageRequest;
+import com.jvictor01.summoners.dtos.Summoner;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.JsonBodyParser;
 import com.jvictor01.utils.ResponseUtils;

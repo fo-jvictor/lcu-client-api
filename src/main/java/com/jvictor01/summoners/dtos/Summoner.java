@@ -1,4 +1,4 @@
-package com.jvictor01.summoners;
+package com.jvictor01.summoners.dtos;
 
 import org.json.JSONObject;
 

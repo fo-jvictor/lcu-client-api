@@ -1,4 +1,4 @@
-package com.jvictor01.lobby.team_builder;
+package com.jvictor01.lobby.team_builder.dtos;
 
 import org.json.JSONObject;
 

@@ -2,10 +2,10 @@ package com.jvictor01.controllers;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.lobby.Lobby;
-import com.jvictor01.lobby.LobbyRoles;
+import com.jvictor01.lobby.dtos.Lobby;
+import com.jvictor01.lobby.dtos.LobbyRoles;
 import com.jvictor01.lobby.LobbyService;
-import com.jvictor01.lobby.LobbySettings;
+import com.jvictor01.lobby.dtos.LobbySettings;
 import com.jvictor01.utils.JsonBodyParser;
 import com.jvictor01.utils.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
@@ -33,7 +33,6 @@ public class LobbyController implements HttpHandler {
         exchange.getResponseHeaders().add("Access-Control-Allow-Headers", "*");
 
         String subpath = RequestRouteHelper.getSubpathByBaseRoute(basePath, exchange.getRequestURI().getRawPath());
-        System.out.println("[API] " + exchange.getRequestURI().getPath());
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(204, -1);

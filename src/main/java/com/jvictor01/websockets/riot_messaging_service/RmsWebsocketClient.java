@@ -1,6 +1,6 @@
 package com.jvictor01.websockets.riot_messaging_service;
 
-import com.jvictor01.trust_manager.SSLContextFactory;
+import com.jvictor01.utils.trust_manager.SSLContextFactory;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 

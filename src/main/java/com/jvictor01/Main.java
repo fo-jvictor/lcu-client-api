@@ -1,10 +1,10 @@
 package com.jvictor01;
 
+import com.jvictor01.authentication.LeagueProcessUtils;
 import com.jvictor01.controllers.*;
-import com.jvictor01.frontend.FrontendWebsocketServer;
-import com.jvictor01.riot_client.RsoService;
-import com.jvictor01.trust_manager.SSLContextFactory;
-import com.jvictor01.utils.LeagueProcessUtils;
+import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
+import com.jvictor01.riot_client.RiotSignOnService;
+import com.jvictor01.utils.trust_manager.SSLContextFactory;
 import com.jvictor01.websockets.lcu.LcuWebsocketClient;
 import com.jvictor01.websockets.riot_client.RiotClientWebSocketClient;
 import com.jvictor01.websockets.riot_messaging_service.RmsMessageDecoder;
@@ -32,14 +32,13 @@ public class Main {
         server.createContext("/api/matchmaking", new MatchmakingController());
         server.createContext("/api/summoners", new SummonerController());
         server.createContext("/api/gameflow", new GameFlowController());
-
         server.createContext("/", new StaticFileHandler());
 
         server.setExecutor(null);
         server.start();
-        System.out.println("SERVER STARTED ON PORT 8080");
+        System.out.println("Server started on port 8080");
 
-        final FrontendWebsocketServer websocketServer = new FrontendWebsocketServer();
+        final FrontendWebsocketConnection websocketServer = new FrontendWebsocketConnection();
         websocketServer.connect();
 
         try {
@@ -61,24 +60,19 @@ public class Main {
             riotClientWebSocketClient.setSocketFactory(context.getSocketFactory());
             riotClientWebSocketClient.connectBlocking();
 
-            RsoService rsoService = new RsoService();
-            String accessToken = rsoService.getAccessToken();
+            RiotSignOnService riotSignOnService = new RiotSignOnService();
+            String accessToken = riotSignOnService.getAccessToken();
 
-            String rmsUrl =
-                    String.format("wss://us.edge.rms.si.riotgames.com:443/rms/v1/session" +
-                                    "?token=%s" +
-                                    "&id=%s" +
-                                    "&token_type=access" +
-                                    "&product_id=riot_client" +
-                                    "&platform=windows" +
-                                    "&device=desk",
-                            accessToken,
-                            UUID.randomUUID()
-                    );
-
+            String rmsUrl = String.format("wss://us.edge.rms.si.riotgames.com:443/rms/v1/session" +
+                            "?token=%s" +
+                            "&id=%s" +
+                            "&token_type=access" +
+                            "&product_id=riot_client" +
+                            "&platform=windows" +
+                            "&device=desk",
+                    accessToken, UUID.randomUUID());
 
             URI uri = URI.create(rmsUrl);
-
             RmsWebsocketClient rmsClient = new RmsWebsocketClient(uri, new RmsMessageDecoder());
             rmsClient.connectBlocking();
 

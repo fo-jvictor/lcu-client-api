@@ -1,7 +1,9 @@
 package com.jvictor01.lobby.team_builder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.summoners.Summoner;
+import com.jvictor01.lobby.team_builder.dtos.ChampSelectSession;
+import com.jvictor01.lobby.team_builder.dtos.TeamMember;
+import com.jvictor01.summoners.dtos.Summoner;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
@@ -34,13 +36,4 @@ public class LobbyTeamBuilderService {
         return httpUtils.buildPostRequestBy(MY_SELECTION, teamMember, TeamMember.class);
     }
 
-    public void papoi() {
-
-        List<TeamMember> myTeam = getChampSelection().getMyTeam();
-        myTeam.forEach(teamMember -> {
-            Summoner summonerByPuuid = summonerService.getSummonerById(teamMember.getSummonerId());
-            System.out.println("Summoner id: " + summonerByPuuid.getSummonerId() + "nickname: " + summonerByPuuid.getDisplayName());
-        });
-
-    }
 }

@@ -1,6 +1,9 @@
 package com.jvictor01.lobby;
 
-import com.jvictor01.summoners.Summoner;
+import com.jvictor01.lobby.dtos.Invitation;
+import com.jvictor01.lobby.dtos.LobbyRoles;
+import com.jvictor01.lobby.dtos.LobbySettings;
+import com.jvictor01.summoners.dtos.Summoner;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.HttpUtils;
 
@@ -82,7 +85,7 @@ public class LobbyService {
     }
 
     public HttpResponse<String> getLobbys() {
-        return httpUtils.getLobbys(LobbyEndpoints.MAPS_V2);
+        return httpUtils.getLobbys(LobbyEndpoints.GAME_QUEUES);
     }
 
     public HttpResponse<String> postCustomInvitation() {
