@@ -3,8 +3,8 @@ package com.jvictor01.websockets.lcu;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import com.jvictor01.utils.trust_manager.SSLContextFactory;
+import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
@@ -16,6 +16,7 @@ public class LcuWebsocketClient extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final FrontendWebsocketConnection frontendWebsocketConnection;
     private static final String MATCH_FOUND = "Found";
+    private boolean readyCheckNotified = false;
 
     public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketConnection frontendWebsocketConnection) {
         super(serverUri, httpHeaders);
@@ -35,12 +36,31 @@ public class LcuWebsocketClient extends WebSocketClient {
             Optional.ofNullable(objectMapper.readTree(message))
                     .map(jsonArray -> jsonArray.get(2))
                     .map(eventData -> eventData.get("data"))
-                    .map(dataNode -> dataNode.get("searchState"))
-                    .map(JsonNode::textValue)
-                    .filter(MATCH_FOUND::equalsIgnoreCase)
-                    .ifPresent(matchFound -> {
-                        frontendWebsocketConnection.sendMessage("MATCH FOUND");
+                    .ifPresent(data -> {
+
+                        String searchState = data.path("searchState").asText(null);
+                        JsonNode readyCheck = data.path("readyCheck");
+                        String readyCheckState = readyCheck.path("state").asText(null);
+                        String playerResponse = readyCheck.path("playerResponse").asText(null);
+
+                        boolean readyCheckActive = MATCH_FOUND.equalsIgnoreCase(searchState)
+                                && "InProgress".equalsIgnoreCase(readyCheckState)
+                                && "None".equalsIgnoreCase(playerResponse);
+
+                        if (readyCheckActive && !readyCheckNotified) {
+                            readyCheckNotified = true;
+                            frontendWebsocketConnection.sendMessage("MATCH FOUND");
+                            return;
+                        }
+
+                        boolean readyCheckEnded = !"InProgress".equalsIgnoreCase(readyCheckState)
+                                || !"None".equalsIgnoreCase(playerResponse);
+
+                        if (readyCheckEnded && readyCheckNotified) {
+                            readyCheckNotified = false;
+                        }
                     });
+
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

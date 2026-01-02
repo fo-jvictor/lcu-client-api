@@ -1,5 +1,7 @@
 package com.jvictor01.authentication;
 
+import com.jvictor01.utils.qr_code.QrCodeGenerator;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -64,7 +66,14 @@ public class LeagueClientAuthentication {
         System.out.println("RIOT CLIENT PORT: " + RIOT_CLIENT_SERVER_PORT);
         System.out.println("RIOT CLIENT AUTH TOKEN: " + RIOT_CLIENT_AUTH_TOKEN);
 
-        System.out.println("\nAccess the following url via mobile: " + getIp() + ":8080\n");
+        System.out.println("\nAccess the following QR code via mobile, " +
+                "MAKE SURE YOU'RE CONNECTED IN THE SAME NETWORK AS YOUR PC");
+
+        try {
+            QrCodeGenerator.printQrCode("http://" + getIp() + ":8080");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         process.waitFor();
         reader.close();
