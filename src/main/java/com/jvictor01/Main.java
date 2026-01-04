@@ -1,9 +1,10 @@
 package com.jvictor01;
 
+import com.jvictor01.app_setup.LeagueConnectionsLifecycleManager;
 import com.jvictor01.app_setup.LeagueProcessUtils;
 import com.jvictor01.controllers.*;
 import com.jvictor01.riot_client.RiotSignOnService;
-import com.jvictor01.utils.trust_manager.SSLContextFactory;
+import com.jvictor01.utils.HttpUtils;
 import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import com.jvictor01.websockets.lcu.LcuWebsocketClient;
 import com.jvictor01.websockets.riot_client.RiotClientWebSocketClient;
@@ -11,7 +12,6 @@ import com.jvictor01.websockets.riot_messaging_service.RmsMessageDecoder;
 import com.jvictor01.websockets.riot_messaging_service.RmsWebsocketClient;
 import com.sun.net.httpserver.HttpServer;
 
-import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -50,15 +50,16 @@ public class Main {
                     "Content-Type", "application/json",
                     "Accept", "application/json");
 
-            SSLContext context = SSLContextFactory.createTrustAllSSLContext();
 
-            LcuWebsocketClient lcuWebsocketClient = new LcuWebsocketClient(lcuWebSocket, lcuWebSocketHeaders, websocketServer);
-            lcuWebsocketClient.setSocketFactory(context.getSocketFactory());
-            lcuWebsocketClient.connectBlocking();
+            var lifecycleManager = new LeagueConnectionsLifecycleManager(new HttpUtils());
+            lifecycleManager.start();
+
+            LcuWebsocketClient lcuWebsocketClient = new LcuWebsocketClient(lcuWebSocket, lcuWebSocketHeaders, websocketServer, lifecycleManager);
+            lifecycleManager.setLcuWebsocketClient(lcuWebsocketClient);
+
 
             RiotClientWebSocketClient riotClientWebSocketClient = new RiotClientWebSocketClient(riotClientWebSocket, riotClientWebSocketHeaders);
-            riotClientWebSocketClient.setSocketFactory(context.getSocketFactory());
-            riotClientWebSocketClient.connectBlocking();
+            riotClientWebSocketClient.connect();
 
             RiotSignOnService riotSignOnService = new RiotSignOnService();
             String accessToken = riotSignOnService.getAccessToken();
@@ -74,7 +75,7 @@ public class Main {
 
             URI uri = URI.create(rmsUrl);
             RmsWebsocketClient rmsClient = new RmsWebsocketClient(uri, new RmsMessageDecoder());
-            rmsClient.connectBlocking();
+            rmsClient.connect();
 
 
         } catch (Exception e) {

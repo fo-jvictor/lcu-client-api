@@ -9,6 +9,7 @@ public class LeagueProcessUtils {
     private final LeagueApisSetup leagueApisSetup = new LeagueApisSetup();
 
     private void startLeagueClient() {
+        //TODO: Close riot processes before opening this one, otherwise sometimes it wont work idk why
         ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
 

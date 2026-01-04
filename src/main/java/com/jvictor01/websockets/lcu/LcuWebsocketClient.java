@@ -3,6 +3,7 @@ package com.jvictor01.websockets.lcu;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.utils.trust_manager.SSLContextFactory;
 import com.jvictor01.websockets.frontend_connection.AvailableWebsocketEvents;
 import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import org.java_websocket.client.WebSocketClient;
@@ -15,13 +16,18 @@ import java.util.Optional;
 public class LcuWebsocketClient extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private final FrontendWebsocketConnection frontendWebsocketConnection;
+    private final WebSocketEventListener webSocketEventListener;
     private static final String MATCH_FOUND = "Found";
     private boolean readyCheckNotified = false;
     private boolean queueNotified = false;
 
-    public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketConnection frontendWebsocketConnection) {
+    public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders,
+                              FrontendWebsocketConnection frontendWebsocketConnection,
+                              WebSocketEventListener webSocketEventListener) {
         super(serverUri, httpHeaders);
+        setSocketFactory(SSLContextFactory.createTrustAllSSLContext().getSocketFactory());
         this.frontendWebsocketConnection = frontendWebsocketConnection;
+        this.webSocketEventListener = webSocketEventListener;
     }
 
     @Override
@@ -29,6 +35,7 @@ public class LcuWebsocketClient extends WebSocketClient {
         System.out.println("Connected to LCU WebSocket");
         this.send(LcuWebsocketEvents.LOBBY_INFORMATION);
         this.send(LcuWebsocketEvents.MATCHMAKING_READY_CHECK);
+        this.webSocketEventListener.onOpen();
     }
 
     @Override
@@ -80,7 +87,7 @@ public class LcuWebsocketClient extends WebSocketClient {
     @Override
     public void onClose(int code, String reason, boolean remote) {
         System.out.println("Disconnected from LCU WebSocket. Code: " + code + ", Reason: " + reason);
-        //TODO: Develop retry logic
+        this.webSocketEventListener.onClose();
     }
 
     @Override

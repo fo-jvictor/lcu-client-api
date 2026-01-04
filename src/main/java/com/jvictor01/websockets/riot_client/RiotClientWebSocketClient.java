@@ -1,5 +1,6 @@
 package com.jvictor01.websockets.riot_client;
 
+import com.jvictor01.utils.trust_manager.SSLContextFactory;
 import com.jvictor01.websockets.lcu.LcuWebsocketEvents;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -12,6 +13,7 @@ public class RiotClientWebSocketClient extends WebSocketClient {
 
     public RiotClientWebSocketClient(URI serverUri, Map<String, String> httpHeaders) {
         super(serverUri, httpHeaders);
+        setSocketFactory(SSLContextFactory.createTrustAllSSLContext().getSocketFactory());
     }
 
     @Override

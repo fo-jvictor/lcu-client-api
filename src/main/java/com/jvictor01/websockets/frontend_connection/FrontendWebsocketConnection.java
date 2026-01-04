@@ -60,14 +60,10 @@ public class FrontendWebsocketConnection {
                 outputStream.write(frame);
                 outputStream.flush();
 
-                System.out.println("message sent: " + message);
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        System.err.println("No client connected, unable to send message: " + message);
 
     }
 
