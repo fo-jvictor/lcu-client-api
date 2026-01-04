@@ -14,7 +14,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static com.jvictor01.authentication.LeagueClientAuthentication.*;
+import static com.jvictor01.app_setup.LeagueApisSetup.*;
 
 public class HttpUtils {
     private final HttpClient httpClient;

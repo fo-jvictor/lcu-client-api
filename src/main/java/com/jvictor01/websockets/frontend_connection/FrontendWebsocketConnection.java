@@ -92,7 +92,7 @@ public class FrontendWebsocketConnection {
 
                     outputStream.write(response.getBytes(StandardCharsets.UTF_8));
                     outputStream.flush();
-                    System.out.println("message sent: " + response);
+                    System.out.println("Connection established successfully with remote client");
                 }
 
             }

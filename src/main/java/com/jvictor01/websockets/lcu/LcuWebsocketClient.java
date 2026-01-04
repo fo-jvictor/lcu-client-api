@@ -3,7 +3,7 @@ package com.jvictor01.websockets.lcu;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.utils.trust_manager.SSLContextFactory;
+import com.jvictor01.websockets.frontend_connection.AvailableWebsocketEvents;
 import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -17,6 +17,7 @@ public class LcuWebsocketClient extends WebSocketClient {
     private final FrontendWebsocketConnection frontendWebsocketConnection;
     private static final String MATCH_FOUND = "Found";
     private boolean readyCheckNotified = false;
+    private boolean queueNotified = false;
 
     public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders, FrontendWebsocketConnection frontendWebsocketConnection) {
         super(serverUri, httpHeaders);
@@ -43,18 +44,26 @@ public class LcuWebsocketClient extends WebSocketClient {
                         String readyCheckState = readyCheck.path("state").asText(null);
                         String playerResponse = readyCheck.path("playerResponse").asText(null);
 
-                        boolean readyCheckActive = MATCH_FOUND.equalsIgnoreCase(searchState)
-                                && "InProgress".equalsIgnoreCase(readyCheckState)
-                                && "None".equalsIgnoreCase(playerResponse);
+                        boolean readyCheckActive = isReadyCheckActive(searchState, readyCheckState, playerResponse);
+                        boolean inQueue = isIsCurrentlyInQueue(data, searchState);
+
+                        if (inQueue && !queueNotified) {
+                            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_STARTED.getValue());
+                            queueNotified = true;
+                        }
+
+                        if (!inQueue) {
+                            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_ENDED.getValue());
+                            queueNotified = false;
+                        }
 
                         if (readyCheckActive && !readyCheckNotified) {
                             readyCheckNotified = true;
-                            frontendWebsocketConnection.sendMessage("MATCH FOUND");
+                            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_MATCH_FOUND.getValue());
                             return;
                         }
 
-                        boolean readyCheckEnded = !"InProgress".equalsIgnoreCase(readyCheckState)
-                                || !"None".equalsIgnoreCase(playerResponse);
+                        boolean readyCheckEnded = isReadyCheckEnded(readyCheckState, playerResponse);
 
                         if (readyCheckEnded && readyCheckNotified) {
                             readyCheckNotified = false;
@@ -67,20 +76,31 @@ public class LcuWebsocketClient extends WebSocketClient {
 
     }
 
+
     @Override
     public void onClose(int code, String reason, boolean remote) {
         System.out.println("Disconnected from LCU WebSocket. Code: " + code + ", Reason: " + reason);
-        try {
-            Thread.sleep(5000);
-            this.setSocketFactory(SSLContextFactory.createTrustAllSSLContext().getSocketFactory());
-            this.connectBlocking();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        //TODO: Develop retry logic
     }
 
     @Override
     public void onError(Exception ex) {
 //        ex.printStackTrace();
+    }
+
+    private boolean isReadyCheckActive(String searchState, String readyCheckState, String playerResponse) {
+        return MATCH_FOUND.equalsIgnoreCase(searchState)
+                && "InProgress".equalsIgnoreCase(readyCheckState)
+                && "None".equalsIgnoreCase(playerResponse);
+    }
+
+    private boolean isReadyCheckEnded(String readyCheckState, String playerResponse) {
+        return !"InProgress".equalsIgnoreCase(readyCheckState)
+                || !"None".equalsIgnoreCase(playerResponse);
+    }
+
+    private boolean isIsCurrentlyInQueue(JsonNode data, String searchState) {
+        return "Searching".equalsIgnoreCase(searchState)
+                && data.path("isCurrentlyInQueue").asBoolean();
     }
 }

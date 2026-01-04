@@ -15,6 +15,11 @@ application {
     mainClass = 'com.jvictor01.Main'
 }
 
+shadowJar {
+    archiveFileName = 'lcu-client-api.jar'
+}
+
+
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'

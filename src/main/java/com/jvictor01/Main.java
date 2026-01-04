@@ -1,10 +1,10 @@
 package com.jvictor01;
 
-import com.jvictor01.authentication.LeagueProcessUtils;
+import com.jvictor01.app_setup.LeagueProcessUtils;
 import com.jvictor01.controllers.*;
-import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import com.jvictor01.riot_client.RiotSignOnService;
 import com.jvictor01.utils.trust_manager.SSLContextFactory;
+import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import com.jvictor01.websockets.lcu.LcuWebsocketClient;
 import com.jvictor01.websockets.riot_client.RiotClientWebSocketClient;
 import com.jvictor01.websockets.riot_messaging_service.RmsMessageDecoder;
@@ -18,7 +18,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.jvictor01.authentication.LeagueClientAuthentication.*;
+import static com.jvictor01.app_setup.LeagueApisSetup.*;
 
 public class Main {
     public static void main(String[] args) throws IOException {
