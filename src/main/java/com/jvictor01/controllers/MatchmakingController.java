@@ -2,7 +2,7 @@ package com.jvictor01.controllers;
 
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.matchmaking.MatchmakingService;
-import com.jvictor01.utils.ResponseUtils;
+import com.jvictor01.http.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 

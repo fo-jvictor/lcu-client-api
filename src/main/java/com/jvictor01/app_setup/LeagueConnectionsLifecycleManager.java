@@ -1,6 +1,7 @@
 package com.jvictor01.app_setup;
 
-import com.jvictor01.utils.HttpUtils;
+import com.jvictor01.http.HttpMethods;
+import com.jvictor01.http.HttpWebClient;
 import com.jvictor01.websockets.lcu.LcuWebsocketClient;
 import com.jvictor01.websockets.lcu.WebSocketEventListener;
 
@@ -12,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 public class LeagueConnectionsLifecycleManager implements WebSocketEventListener {
     private final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private volatile LcuState lcuState = LcuState.DOWN;
-    private final HttpUtils httpUtils;
+    private final HttpWebClient httpWebClient;
     private LcuWebsocketClient lcuWebsocketClient;
 
-    public LeagueConnectionsLifecycleManager(HttpUtils httpUtils) {
-        this.httpUtils = httpUtils;
+    public LeagueConnectionsLifecycleManager(HttpWebClient httpWebClient) {
+        this.httpWebClient = httpWebClient;
     }
 
     public void start() {
@@ -41,7 +42,7 @@ public class LeagueConnectionsLifecycleManager implements WebSocketEventListener
 
     private boolean lcuIsAvailable() {
         try {
-            HttpResponse<String> stringHttpResponse = httpUtils.buildGetRequest("/lol-platform-config/v1/initial-configuration-complete");
+            HttpResponse<String> stringHttpResponse = httpWebClient.buildRequestForLcu("/lol-platform-config/v1/initial-configuration-complete", HttpMethods.GET);
             return stringHttpResponse.statusCode() == 200;
         } catch (Exception e) {
             return false;

@@ -3,24 +3,22 @@ package com.jvictor01.gameflow;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.utils.HttpUtils;
+import com.jvictor01.http.HttpMethods;
+import com.jvictor01.http.HttpWebClient;
 
 import java.net.http.HttpResponse;
 
-import static com.jvictor01.gameflow.GameflowEndpoints.RECONNECT_URL;
-import static com.jvictor01.gameflow.GameflowEndpoints.SESSION_URL;
-
 public class GameflowService {
-    private final HttpUtils httpUtils;
+    private final HttpWebClient httpWebClient;
     private final ObjectMapper objectMapper;
 
     public GameflowService() {
-        this.httpUtils = new HttpUtils();
+        this.httpWebClient = new HttpWebClient();
         this.objectMapper = new ObjectMapper();
     }
 
     public String getGameFlowSession() {
-        HttpResponse<String> gameFlowSession = httpUtils.buildGetRequest(SESSION_URL);
+        HttpResponse<String> gameFlowSession = httpWebClient.buildRequestForLcu(GameflowEndpoints.SESSION_URL, HttpMethods.GET);
 
         if (gameFlowSession.statusCode() != 200) {
             return GameflowStateEnum.NONE.getState();
@@ -35,8 +33,4 @@ public class GameflowService {
         }
     }
 
-
-    public void reconnect() {
-        HttpResponse<String> response = httpUtils.buildPostRequest(RECONNECT_URL);
-    }
 }

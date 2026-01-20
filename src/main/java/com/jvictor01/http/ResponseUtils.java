@@ -1,4 +1,4 @@
-package com.jvictor01.utils;
+package com.jvictor01.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;

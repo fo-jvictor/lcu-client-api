@@ -1,6 +1,5 @@
 package com.jvictor01.utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import org.json.JSONObject;
 
@@ -10,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 public class JsonBodyParser {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public static JSONObject toJson(HttpExchange exchange) throws IOException {
         try (InputStream is = exchange.getRequestBody()) {
@@ -28,14 +26,4 @@ public class JsonBodyParser {
         return mapper.apply(json);
     }
 
-    public static <T> T toDto(HttpExchange exchange, Class<T> clazz) throws IOException {
-        try (InputStream is = exchange.getRequestBody()) {
-            byte[] bytes = is.readAllBytes();
-            String body = new String(bytes, StandardCharsets.UTF_8);
-            if (body == null || body.isBlank()) {
-                return null;
-            }
-            return MAPPER.readValue(body, clazz);
-        }
-    }
 }

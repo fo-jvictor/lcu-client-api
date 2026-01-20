@@ -1,18 +1,19 @@
 package com.jvictor01.matchmaking;
 
-import com.jvictor01.utils.HttpUtils;
+import com.jvictor01.http.HttpMethods;
+import com.jvictor01.http.HttpWebClient;
 
 import java.net.http.HttpResponse;
 
 public class MatchmakingService {
-    private final HttpUtils httpUtils = new HttpUtils();
+    private final HttpWebClient httpWebClient = new HttpWebClient();
 
     public HttpResponse<String> postReadyCheckAccept() {
-        return httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_ACCEPT);
+        return httpWebClient.buildRequestForLcu(MatchmakingEndpoints.READY_CHECK_ACCEPT, HttpMethods.POST);
     }
 
     public HttpResponse<String> postReadyCheckDecline() {
-        return httpUtils.buildPostRequest(MatchmakingEndpoints.READY_CHECK_DECLINE);
+        return httpWebClient.buildRequestForLcu(MatchmakingEndpoints.READY_CHECK_DECLINE, HttpMethods.POST);
     }
 
 

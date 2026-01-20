@@ -3,24 +3,26 @@ package com.jvictor01.summoners;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.http.HttpMethods;
+import com.jvictor01.http.HttpWebClient;
 import com.jvictor01.summoners.dtos.BackgroundImageRequest;
 import com.jvictor01.summoners.dtos.Summoner;
-import com.jvictor01.utils.HttpUtils;
+import org.json.JSONObject;
 
 import java.net.http.HttpResponse;
 import java.util.Collections;
 
 public class SummonerService {
     private final ObjectMapper objectMapper;
-    private final HttpUtils httpUtils;
+    private final HttpWebClient httpWebClient;
 
     public SummonerService() {
         this.objectMapper = new ObjectMapper();
-        this.httpUtils = new HttpUtils();
+        this.httpWebClient = new HttpWebClient();
     }
 
     public HttpResponse<String> changeSummonerBackgroundProfileImage(BackgroundImageRequest backgroundImageRequest) {
-        return httpUtils.buildPostRequest(SummonerEndpoints.SUMMONER_PROFILE_BACKGROUND, backgroundImageRequest);
+        return httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_PROFILE_BACKGROUND, HttpMethods.POST, backgroundImageRequest);
     }
 
     //nickname format is: ingamename#tag
@@ -32,7 +34,7 @@ public class SummonerService {
             throw new RuntimeException(e);
         }
 
-        HttpResponse<String> response = httpUtils.buildPostRequest(SummonerEndpoints.getSummonerDetailsEndpoint, requestBody);
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_DETAILS, HttpMethods.POST, requestBody);
 
         try {
             return objectMapper.readValue(response.body(), Summoner[].class);
@@ -43,7 +45,7 @@ public class SummonerService {
 
 
     public Summoner getSummonerByPuuid(String puuid) {
-        HttpResponse<String> response = httpUtils.buildGetRequest(SummonerEndpoints.SUMMONER_BY_PUUID + puuid);
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_BY_PUUID + puuid, HttpMethods.GET);
         try {
             Summoner summoner = objectMapper.readValue(response.body(), Summoner.class);
             if (summoner == null) {
@@ -56,7 +58,7 @@ public class SummonerService {
     }
 
     public Summoner getSummonerById(int id) {
-        HttpResponse<String> response = httpUtils.buildGetRequest(SummonerEndpoints.SUMMONER_BY_ID + id);
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_BY_ID + id, HttpMethods.GET);
         try {
             return objectMapper.readValue(response.body(), Summoner.class);
         } catch (JsonProcessingException e) {
@@ -66,7 +68,7 @@ public class SummonerService {
 
     public String getSummonerPuuidByNicknameAndTagLine(String gameName, String tagLine) {
         HttpResponse<String> response =
-                httpUtils.buildGetRequest(SummonerEndpoints.SUMMONER_ALIAS_LOOKUP + "?gameName=" + gameName + "&tagLine=" + tagLine);
+                httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_ALIAS_LOOKUP + "?gameName=" + gameName + "&tagLine=" + tagLine, HttpMethods.GET);
 
         try {
             JsonNode rootNode = objectMapper.readTree(response.body());
@@ -97,12 +99,14 @@ public class SummonerService {
             throw new RuntimeException(e);
         }
 
-        HttpResponse<String> response = httpUtils.buildPostRequest(SummonerEndpoints.changeRiotIdEndpoint, requestBody);
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(SummonerEndpoints.CHANGE_RIOT_ID, HttpMethods.POST, requestBody);
         System.out.println(response.body());
 
     }
 
     public Summoner loadOwnSummonerDetails() {
-        return httpUtils.buildGetRequestBy(SummonerEndpoints.CURRENT_SUMMONER, Summoner.class);
+        HttpResponse<String> stringHttpResponse = httpWebClient.buildRequestForLcu(SummonerEndpoints.CURRENT_SUMMONER, HttpMethods.GET);
+        JSONObject jsonObject = new JSONObject(stringHttpResponse.body());
+        return new Summoner(jsonObject);
     }
 }

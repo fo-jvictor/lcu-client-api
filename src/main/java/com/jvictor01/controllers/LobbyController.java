@@ -1,23 +1,19 @@
 package com.jvictor01.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jvictor01.lobby.dtos.Lobby;
-import com.jvictor01.lobby.dtos.LobbyRoles;
+import com.jvictor01.http.ResponseUtils;
 import com.jvictor01.lobby.LobbyService;
+import com.jvictor01.lobby.dtos.LobbyRoles;
 import com.jvictor01.lobby.dtos.LobbySettings;
 import com.jvictor01.utils.JsonBodyParser;
-import com.jvictor01.utils.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class LobbyController implements HttpHandler {
@@ -39,30 +35,10 @@ public class LobbyController implements HttpHandler {
             return;
         }
 
-        if ("/queue-ids".equals(subpath)) {
-            HttpResponse<String> response = lobbyService.getLobbys();
-            List<Lobby> lobbies = objectMapper.readValue(response.body(), new TypeReference<List<Lobby>>() {
-            });
-
-            String jsonResponse = objectMapper.writeValueAsString(lobbies);
-            byte[] bytes = jsonResponse.getBytes(StandardCharsets.UTF_8);
-
-            exchange.sendResponseHeaders(200, bytes.length);
-
-            OutputStream responseBody = exchange.getResponseBody();
-            responseBody.write(bytes);
-            responseBody.close();
-        }
-
         if ("/create".equals(subpath)) {
             LobbySettings lobbySettings = JsonBodyParser.toDto(exchange, LobbySettings::new);
             HttpResponse<String> response = lobbyService.createLobby(lobbySettings);
             ResponseUtils.send(exchange, response.statusCode());
-            return;
-        }
-
-        if ("/invite-custom-summoners".contains(subpath)) {
-            lobbyService.postCustomInvitation();
             return;
         }
 

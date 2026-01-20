@@ -4,7 +4,7 @@ import com.jvictor01.summoners.dtos.BackgroundImageRequest;
 import com.jvictor01.summoners.dtos.Summoner;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.utils.JsonBodyParser;
-import com.jvictor01.utils.ResponseUtils;
+import com.jvictor01.http.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 

@@ -3,8 +3,8 @@ package com.jvictor01;
 import com.jvictor01.app_setup.LeagueConnectionsLifecycleManager;
 import com.jvictor01.app_setup.LeagueProcessUtils;
 import com.jvictor01.controllers.*;
+import com.jvictor01.http.HttpWebClient;
 import com.jvictor01.riot_client.RiotSignOnService;
-import com.jvictor01.utils.HttpUtils;
 import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import com.jvictor01.websockets.lcu.LcuWebsocketClient;
 import com.jvictor01.websockets.riot_client.RiotClientWebSocketClient;
@@ -51,12 +51,11 @@ public class Main {
                     "Accept", "application/json");
 
 
-            var lifecycleManager = new LeagueConnectionsLifecycleManager(new HttpUtils());
+            var lifecycleManager = new LeagueConnectionsLifecycleManager(new HttpWebClient());
             lifecycleManager.start();
 
             LcuWebsocketClient lcuWebsocketClient = new LcuWebsocketClient(lcuWebSocket, lcuWebSocketHeaders, websocketServer, lifecycleManager);
             lifecycleManager.setLcuWebsocketClient(lcuWebsocketClient);
-
 
             RiotClientWebSocketClient riotClientWebSocketClient = new RiotClientWebSocketClient(riotClientWebSocket, riotClientWebSocketHeaders);
             riotClientWebSocketClient.connect();
