@@ -1,7 +1,11 @@
 package com.jvictor01.lobby;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.http.HttpMethods;
 import com.jvictor01.http.HttpWebClient;
+import com.jvictor01.http.Response;
+import com.jvictor01.lobby.dtos.GameQueue;
 import com.jvictor01.lobby.dtos.Invitation;
 import com.jvictor01.lobby.dtos.LobbyRoles;
 import com.jvictor01.lobby.dtos.LobbySettings;
@@ -63,6 +67,34 @@ public class LobbyService {
         String formattedUri = String.format(LobbyEndpoints.KICK_SUMMONER_BY_SUMMONER_ID, summonerId);
         return httpWebClient.buildRequestForLcu(formattedUri, HttpMethods.POST);
     }
+
+    public Response<List<GameQueue>> getAvailableGameQueues() {
+
+        HttpResponse<String> response =
+                httpWebClient.buildRequestForLcu(LobbyEndpoints.GAME_QUEUES, HttpMethods.GET);
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<GameQueue> queues = mapper.readValue(response.body(), new TypeReference<>() {
+            });
+
+            List<GameQueue> availableGameQueues = queues.stream()
+                    .filter(GameQueue::isEnabled)
+                    .filter(GameQueue::isVisible)
+                    .filter(gameQueue -> !gameQueue.isCustom())
+                    .filter(gameQueue -> !gameQueue.getCategory().equalsIgnoreCase("Custom"))
+                    .filter(gameQueue -> !gameQueue.getGameSelectCategory().equalsIgnoreCase("CreateCustom"))
+                    .filter(gameQueue -> !gameQueue.getQueueAvailability().equalsIgnoreCase("PlatformDisabled"))
+                    .filter(gameQueue -> !gameQueue.isRemovalFromGameAllowed())
+                    .toList();
+
+            return new Response<>(response.statusCode(), availableGameQueues);
+
+        } catch (Exception e) {
+            return new Response<>(500, null);
+        }
+    }
+
 
     public HttpResponse<String> postInvitationByNickname(String nickname, String tag) {
         String puuid = summonerService.getSummonerPuuidByNicknameAndTagLine(nickname, tag);

@@ -52,7 +52,6 @@ public class HttpWebClient {
             this.httpRequest.header("Authorization", "Basic " + RIOT_CLIENT_AUTH_TOKEN);
         }
 
-
         if (requestBody == null) {
             this.httpRequest.method(method.getValue(), HttpRequest.BodyPublishers.noBody()).build();
         } else {
