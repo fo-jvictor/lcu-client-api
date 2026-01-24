@@ -45,15 +45,23 @@ public class LobbyController implements HttpHandler {
             return;
         }
 
+        if ("/name".equals(subpath)) {
+            Response<String> currentLobbyFriendlyName = lobbyService.getCurrentLobbyFriendlyName();
+            ResponseUtils.send(exchange, currentLobbyFriendlyName.getStatusCode(), currentLobbyFriendlyName.getBody());
+            return;
+        }
+
         if ("/available-queues".equals(subpath)) {
             Response<List<GameQueue>> availableGameQueues = lobbyService.getAvailableGameQueues();
             ResponseUtils.send(exchange, availableGameQueues.getStatusCode(), availableGameQueues.getBody());
+            return;
         }
 
         if (subpath.contains("/update-positions-preference")) {
             LobbyRoles lobbyRoles = JsonBodyParser.toDto(exchange, LobbyRoles::new);
             HttpResponse<String> response = lobbyService.updatePositionPreferences(lobbyRoles);
             ResponseUtils.send(exchange, response.statusCode());
+            return;
         }
 
         if ("/invite-summoner".contains(subpath)) {

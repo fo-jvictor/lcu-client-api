@@ -11,6 +11,7 @@ import com.jvictor01.lobby.dtos.LobbyRoles;
 import com.jvictor01.lobby.dtos.LobbySettings;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.summoners.dtos.Summoner;
+import org.json.JSONObject;
 
 import java.net.http.HttpResponse;
 import java.util.Collections;
@@ -34,32 +35,23 @@ public class LobbyService {
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH, HttpMethods.DELETE);
     }
 
-
     public HttpResponse<String> createLobby(LobbySettings lobbySettings) {
-
-        if (QueueIdEnum.getFromId(lobbySettings.getQueueId()) == null) {
-            throw new QueueNotSupportedException("Queue id: " + lobbySettings.getQueueId() + "not supported");
-        }
-
-        lobbySettings.setAllowablePremadeSizes(
-                Optional.ofNullable(lobbySettings.getAllowablePremadeSizes())
-                        .orElse(List.of()));
-
-        lobbySettings.setCustomTeam100(
-                Optional.ofNullable(lobbySettings.getCustomTeam100())
-                        .orElse(List.of()));
-
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.POST, lobbySettings);
+    }
 
+    public Response<String> getCurrentLobbyFriendlyName() {
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.GET);
+        JSONObject gameConfig = new JSONObject(response.body()).getJSONObject("gameConfig");
+        Integer queueId = (Integer) gameConfig.get("queueId");
+
+        String friendlyLobbyName = Optional.ofNullable(QueueIdEnum.getFromId(queueId))
+                .map(QueueIdEnum::getFriendlyQueueName)
+                .orElse(getLobbyShortNameByQueueId(queueId));
+
+        return new Response<>(response.statusCode(), friendlyLobbyName);
     }
 
     public HttpResponse<String> updatePositionPreferences(LobbyRoles lobbyRoles) {
-
-        if (lobbyRoles.getFirstPreference() == null || lobbyRoles.getFirstPreference().isBlank()
-                || LCULobbyPositionType.UNSELECTED.toString().equals(lobbyRoles.getFirstPreference())) {
-            throw new RuntimeException("Primary role empty or unselected");
-        }
-
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.POSITION_PREFERENCES, HttpMethods.PUT, lobbyRoles);
     }
 
@@ -105,6 +97,12 @@ public class LobbyService {
         invitation.setToSummonerName(summoner.getGameName());
 
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.POST, Collections.singletonList(invitation));
+    }
+
+    private String getLobbyShortNameByQueueId(int queueId) {
+        String body = httpWebClient.buildRequestForLcu(String.format(LobbyEndpoints.GAME_QUEUE_BY_ID, queueId), HttpMethods.GET)
+                .body();
+        return (String) new JSONObject(body).get("shortName");
     }
 
 
