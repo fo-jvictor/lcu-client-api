@@ -7,6 +7,7 @@ import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.lobby.dtos.GameQueue;
 import com.jvictor01.lobby.dtos.LobbyRoles;
 import com.jvictor01.lobby.dtos.LobbySettings;
+import com.jvictor01.lobby.dtos.SuggestedPlayer;
 import com.jvictor01.utils.JsonBodyParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -45,9 +46,15 @@ public class LobbyController implements HttpHandler {
             return;
         }
 
-        if ("/name".equals(subpath)) {
-            Response<String> currentLobbyFriendlyName = lobbyService.getCurrentLobbyFriendlyName();
-            ResponseUtils.send(exchange, currentLobbyFriendlyName.getStatusCode(), currentLobbyFriendlyName.getBody());
+        if ("/current".equals(subpath)) {
+            Response<GameQueue> gameQueueResponse = lobbyService.getCurrentLobby();
+            ResponseUtils.send(exchange, gameQueueResponse.getStatusCode(), gameQueueResponse.getBody());
+            return;
+        }
+
+        if ("/suggested-players".equalsIgnoreCase(subpath)) {
+            Response<List<SuggestedPlayer>> suggestedPlayers = lobbyService.getSuggestedPlayers();
+            ResponseUtils.send(exchange, suggestedPlayers.getStatusCode(), suggestedPlayers.getBody());
             return;
         }
 

@@ -18,8 +18,10 @@ public class GameQueue {
     private String gameSelectCategory;
     @JsonProperty("isCustom")
     private boolean custom;
-    private String queueAvailability; //"PlatformDisabled" ou "Available"
+    private String queueAvailability;
     private String type;
+    private String shortName;
+    private boolean showPositionSelector;
 
     public GameQueue() {
     }
@@ -30,6 +32,14 @@ public class GameQueue {
 
     public void setRemovalFromGameAllowed(boolean removalFromGameAllowed) {
         this.removalFromGameAllowed = removalFromGameAllowed;
+    }
+
+    public String getShortName() {
+        return this.shortName;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
     }
 
     public Long getId() {
@@ -58,6 +68,14 @@ public class GameQueue {
 
     public void setCustom(boolean custom) {
         this.custom = custom;
+    }
+
+    public boolean isShowPositionSelector() {
+        return showPositionSelector;
+    }
+
+    public void setShowPositionSelector(boolean showPositionSelector) {
+        this.showPositionSelector = showPositionSelector;
     }
 
     public String getQueueAvailability() {

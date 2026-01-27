@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.http.HttpMethods;
 import com.jvictor01.http.HttpWebClient;
 import com.jvictor01.http.Response;
-import com.jvictor01.lobby.dtos.GameQueue;
-import com.jvictor01.lobby.dtos.Invitation;
-import com.jvictor01.lobby.dtos.LobbyRoles;
-import com.jvictor01.lobby.dtos.LobbySettings;
+import com.jvictor01.lobby.dtos.*;
 import com.jvictor01.summoners.SummonerService;
 import com.jvictor01.summoners.dtos.Summoner;
 import org.json.JSONObject;
@@ -21,10 +18,12 @@ import java.util.Optional;
 public class LobbyService {
     private final HttpWebClient httpWebClient;
     private final SummonerService summonerService;
+    private final ObjectMapper objectMapper;
 
     public LobbyService() {
         this.httpWebClient = new HttpWebClient();
         this.summonerService = new SummonerService();
+        this.objectMapper = new ObjectMapper();
     }
 
     public HttpResponse<String> matchmakingSearch() {
@@ -39,16 +38,64 @@ public class LobbyService {
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.POST, lobbySettings);
     }
 
-    public Response<String> getCurrentLobbyFriendlyName() {
+    public Response<GameQueue> getCurrentLobby() {
         HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.GET);
         JSONObject gameConfig = new JSONObject(response.body()).getJSONObject("gameConfig");
         Integer queueId = (Integer) gameConfig.get("queueId");
 
-        String friendlyLobbyName = Optional.ofNullable(QueueIdEnum.getFromId(queueId))
-                .map(QueueIdEnum::getFriendlyQueueName)
-                .orElse(getLobbyShortNameByQueueId(queueId));
+        HttpResponse<String> currentLobby = httpWebClient.buildRequestForLcu(String.format(LobbyEndpoints.GAME_QUEUE_BY_ID, queueId), HttpMethods.GET);
 
-        return new Response<>(response.statusCode(), friendlyLobbyName);
+        try {
+            GameQueue gameQueue = objectMapper.readValue(currentLobby.body(), new TypeReference<>() {
+            });
+
+            String friendlyLobbyName = Optional.ofNullable(QueueIdEnum.getFromId(queueId))
+                    .map(QueueIdEnum::getFriendlyQueueName)
+                    .orElse(gameQueue.getShortName());
+
+            gameQueue.setShortName(friendlyLobbyName);
+
+            return new Response<>(response.statusCode(), gameQueue);
+
+        } catch (Exception e) {
+            return new Response<>(500, null);
+        }
+    }
+
+    public Response<List<SuggestedPlayer>> getSuggestedPlayers() {
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.SUGGESTED_PLAYERS, HttpMethods.GET);
+
+        try {
+            List<SuggestedPlayer> suggestedPlayers = objectMapper.readValue(response.body(), new TypeReference<>() {
+            });
+
+            List<SuggestedPlayer> onlineFriend = suggestedPlayers.stream()
+                    .filter(suggestedPlayer -> suggestedPlayer.getReason().equalsIgnoreCase("OnlineFriend"))
+                    .filter(suggestedPlayer -> suggestedPlayer.getSummonerName().isEmpty() || suggestedPlayer.getSummonerName() == null)
+                    .map(suggestedPlayer -> {
+                        Summoner summonerById = summonerService.getSummonerById(suggestedPlayer.getSummonerId());
+                        return new SuggestedPlayer(suggestedPlayer.getReason(), suggestedPlayer.getSummonerId(), getSummonerName(summonerById));
+                    })
+                    .toList();
+
+            return new Response<>(response.statusCode(), onlineFriend);
+
+        } catch (Exception e) {
+            return new Response<>(500, null);
+        }
+
+    }
+
+    private String getSummonerName(Summoner summoner) {
+        boolean isSummonerDisplayNameEmpty = summoner.getDisplayName().isEmpty() || summoner.getDisplayName() == null;
+        boolean isSummonerGameNameEmpty = summoner.getGameName().isEmpty() || summoner.getGameName() == null;
+        boolean isSummonerInternalNameEmpty = summoner.getInternalName().isEmpty() || summoner.getInternalName() == null;
+
+        if (!isSummonerDisplayNameEmpty) return summoner.getDisplayName();
+        if (!isSummonerGameNameEmpty) return summoner.getGameName();
+        if (!isSummonerInternalNameEmpty) return summoner.getInternalName();
+
+        return "";
     }
 
     public HttpResponse<String> updatePositionPreferences(LobbyRoles lobbyRoles) {
@@ -66,8 +113,7 @@ public class LobbyService {
                 httpWebClient.buildRequestForLcu(LobbyEndpoints.GAME_QUEUES, HttpMethods.GET);
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<GameQueue> queues = mapper.readValue(response.body(), new TypeReference<>() {
+            List<GameQueue> queues = objectMapper.readValue(response.body(), new TypeReference<>() {
             });
 
             List<GameQueue> availableGameQueues = queues.stream()
@@ -97,12 +143,6 @@ public class LobbyService {
         invitation.setToSummonerName(summoner.getGameName());
 
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.POST, Collections.singletonList(invitation));
-    }
-
-    private String getLobbyShortNameByQueueId(int queueId) {
-        String body = httpWebClient.buildRequestForLcu(String.format(LobbyEndpoints.GAME_QUEUE_BY_ID, queueId), HttpMethods.GET)
-                .body();
-        return (String) new JSONObject(body).get("shortName");
     }
 
 

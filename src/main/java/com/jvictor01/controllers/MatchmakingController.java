@@ -30,13 +30,13 @@ public class MatchmakingController implements HttpHandler {
 
         if ("/search".equals(subpath)) {
             HttpResponse<String> response = lobbyService.matchmakingSearch();
-            ResponseUtils.send(exchange, response.statusCode(), response.body());
+            ResponseUtils.send(exchange, response.statusCode());
             return;
         }
 
         if ("/cancel".equals(subpath)) {
             HttpResponse<String> response = lobbyService.cancelMatchmakingSearch();
-            exchange.sendResponseHeaders(response.statusCode(), response.body().length());
+            ResponseUtils.send(exchange, response.statusCode());
             return;
         }
 

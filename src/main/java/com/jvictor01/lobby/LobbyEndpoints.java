@@ -13,6 +13,7 @@ public class LobbyEndpoints {
     public static final String GAME_QUEUES = "/lol-game-queues/v1/queues";
     public static final String GAME_QUEUE_BY_ID = "/lol-game-queues/v1/queues/%d";
     public static final String PLAYER_SLOTS = "/lol-lobby/v1/lobby/members/localMember/player-slots";
+    public static final String SUGGESTED_PLAYERS = "/lol-suggested-players/v1/suggested-players";
 
     public static final String QUEUES = "static.developer.riotgames.com/docs/lol/queues.json";
 

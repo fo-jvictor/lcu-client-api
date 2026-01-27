@@ -57,7 +57,7 @@ public class SummonerService {
         }
     }
 
-    public Summoner getSummonerById(int id) {
+    public Summoner getSummonerById(Long id) {
         HttpResponse<String> response = httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_BY_ID + id, HttpMethods.GET);
         try {
             return objectMapper.readValue(response.body(), Summoner.class);
