@@ -1,5 +1,6 @@
 package com.jvictor01.lobby;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.http.HttpMethods;
@@ -28,6 +29,16 @@ public class LobbyService {
 
     public HttpResponse<String> matchmakingSearch() {
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH, HttpMethods.POST);
+    }
+
+    public Response<SearchState> getLobbySearchState() {
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.SEARCH_STATE, HttpMethods.GET);
+        try {
+            SearchState searchState = objectMapper.readValue(response.body(), SearchState.class);
+            return new Response<>(response.statusCode(), searchState);
+        } catch (JsonProcessingException e) {
+            return new Response<>(500, null);
+        }
     }
 
     public HttpResponse<String> cancelMatchmakingSearch() {

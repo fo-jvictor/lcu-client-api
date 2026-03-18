@@ -11,12 +11,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FrontendWebsocketConnection {
     private Socket client;
     private OutputStream outputStream;
+    private volatile boolean isHeartbeatRunning = false;
+    private final AtomicLong connectionId = new AtomicLong(0);
 
     public FrontendWebsocketConnection() {
 
@@ -28,44 +31,100 @@ public class FrontendWebsocketConnection {
             Thread thread = new Thread(() -> {
                 while (true) {
                     try {
-                        client = serverSocket.accept();
-                        System.out.println("Client connected: " + client.getInetAddress());
-                        InputStream inputStream = client.getInputStream();
-                        outputStream = client.getOutputStream();
-                        Scanner scanner = new Scanner(inputStream, StandardCharsets.UTF_8);
-                        handshake(scanner);
-                    } catch (IOException ioException) {
+                        Socket newClient = serverSocket.accept();
+                        synchronized (this) {
+                            closeConnection();
+                            this.client = newClient;
+                            this.outputStream = newClient.getOutputStream();
+                        }
+                        Long newConnectionId = connectionId.incrementAndGet();
+                        InputStream inputStream = this.client.getInputStream();
+                        this.outputStream = this.client.getOutputStream();
+                        handshake(new Scanner(inputStream, StandardCharsets.UTF_8));
+                        startHeartbeat(newConnectionId);
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to start WebSocket server", e);
                     }
                 }
             });
-
+            thread.setDaemon(true);
             thread.start();
-
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
     public synchronized void sendMessage(String message) {
-        if (outputStream != null && client != null && !client.isClosed()) {
-            try {
-                byte[] rawData = message.getBytes(StandardCharsets.UTF_8);
-                int frameSize = rawData.length + 2;
-
-                byte[] frame = new byte[frameSize];
-                frame[0] = (byte) 0x81;
-                frame[1] = (byte) rawData.length;
-                System.arraycopy(rawData, 0, frame, 2, rawData.length);
-
-                outputStream.write(frame);
-                outputStream.flush();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (this.client == null || this.outputStream == null) {
+            return;
         }
 
+        try {
+            byte[] rawData = message.getBytes(StandardCharsets.UTF_8);
+            byte[] frame = new byte[rawData.length + 2];
+            frame[0] = (byte) 0x81;
+            frame[1] = (byte) rawData.length;
+            System.arraycopy(rawData, 0, frame, 2, rawData.length);
+
+            outputStream.write(frame);
+            outputStream.flush();
+
+        } catch (IOException e) {
+            closeConnection();
+        }
     }
+
+    private synchronized void closeConnection() {
+        try {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+            if (client != null && !client.isClosed()) {
+                client.close();
+            }
+        } catch (IOException ignored) {
+        } finally {
+            this.outputStream = null;
+            this.client = null;
+            this.isHeartbeatRunning = false;
+        }
+    }
+
+
+    private void startHeartbeat(Long newConnectionId) {
+        isHeartbeatRunning = true;
+        Thread heartbeat = new Thread(() -> {
+            while (isHeartbeatRunning) {
+                try {
+                    Thread.sleep(5000);
+                    if (this.connectionId.get() != newConnectionId) {
+                        return;
+                    }
+
+                    if (sendPingSafe()) {
+                        return;
+                    }
+
+                } catch (InterruptedException ignored) {
+                    return;
+                }
+            }
+        });
+
+        heartbeat.setDaemon(true);
+        heartbeat.start();
+    }
+
+    private boolean sendPingSafe() {
+        synchronized (this) {
+            if (client == null || client.isClosed() || outputStream == null) {
+                return false;
+            }
+            sendMessage("PING");
+            return true;
+        }
+    }
+
 
     private void handshake(Scanner scanner) {
         try {
@@ -88,14 +147,12 @@ public class FrontendWebsocketConnection {
 
                     outputStream.write(response.getBytes(StandardCharsets.UTF_8));
                     outputStream.flush();
-                    System.out.println("Connection established successfully with remote client");
                 }
 
             }
         } catch (NoSuchAlgorithmException | IOException e) {
-
+            closeConnection();
         }
-
     }
 
 }

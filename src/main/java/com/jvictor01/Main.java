@@ -2,6 +2,7 @@ package com.jvictor01;
 
 import com.jvictor01.app_setup.LeagueConnectionsLifecycleManager;
 import com.jvictor01.app_setup.LeagueProcessUtils;
+import com.jvictor01.chat.ChatController;
 import com.jvictor01.controllers.*;
 import com.jvictor01.http.HttpWebClient;
 import com.jvictor01.riot_client.RiotSignOnService;
@@ -12,6 +13,8 @@ import com.jvictor01.websockets.riot_messaging_service.RmsMessageDecoder;
 import com.jvictor01.websockets.riot_messaging_service.RmsWebsocketClient;
 import com.sun.net.httpserver.HttpServer;
 
+import javax.imageio.ImageIO;
+import java.awt.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -32,11 +35,11 @@ public class Main {
         server.createContext("/api/matchmaking", new MatchmakingController());
         server.createContext("/api/summoners", new SummonerController());
         server.createContext("/api/gameflow", new GameFlowController());
+        server.createContext("/api/chat", new ChatController());
         server.createContext("/", new StaticFileHandler());
 
         server.setExecutor(null);
         server.start();
-        System.out.println("Server started on port 8080");
 
         final FrontendWebsocketConnection websocketServer = new FrontendWebsocketConnection();
         websocketServer.connect();
@@ -76,11 +79,22 @@ public class Main {
             RmsWebsocketClient rmsClient = new RmsWebsocketClient(uri, new RmsMessageDecoder());
             rmsClient.connect();
 
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+//        if (SystemTray.isSupported()) {
+//            SystemTray tray = SystemTray.getSystemTray();
+//            PopupMenu popup = new PopupMenu();
+//            MenuItem exitItem = new MenuItem("Exit");
+//            exitItem.addActionListener(e -> System.exit(0));
+//            popup.add(exitItem);
+//
+//            Image image = ImageIO.read(Main.class.getResourceAsStream("/image.png"));
+//            TrayIcon trayIcon = new TrayIcon(image, "league-client-enhancer", popup);
+//            trayIcon.setImageAutoSize(true);
+//            tray.add(trayIcon);
+//        }
 
     }
 

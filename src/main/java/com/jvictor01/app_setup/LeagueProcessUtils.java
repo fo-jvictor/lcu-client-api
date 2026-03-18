@@ -15,7 +15,7 @@ public class LeagueProcessUtils {
 
         //TODO: find a way to get the path of the LeagueClientServices.exe dynamically
         builder.command(
-                "C:\\Riot Games\\Riot Client\\RiotClientServices.exe",
+                "E:\\Riot Games\\Riot Client\\RiotClientServices.exe",
                 "--launch-product=league_of_legends",
                 "--launch-patchline=live",
                 "--client-config-url=https://clientconfig.rpg.riotgames.com"

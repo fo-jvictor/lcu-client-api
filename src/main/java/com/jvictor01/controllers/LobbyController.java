@@ -1,6 +1,5 @@
 package com.jvictor01.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.http.Response;
 import com.jvictor01.http.ResponseUtils;
 import com.jvictor01.lobby.LobbyService;
@@ -24,7 +23,6 @@ public class LobbyController implements HttpHandler {
 
     private final LobbyService lobbyService = new LobbyService();
     private final String basePath = "/api/lobby";
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {

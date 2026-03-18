@@ -1,6 +1,8 @@
 package com.jvictor01.controllers;
 
+import com.jvictor01.http.Response;
 import com.jvictor01.lobby.LobbyService;
+import com.jvictor01.lobby.dtos.SearchState;
 import com.jvictor01.matchmaking.MatchmakingService;
 import com.jvictor01.http.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
@@ -25,6 +27,12 @@ public class MatchmakingController implements HttpHandler {
 
         if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(204, -1);
+            return;
+        }
+
+        if ("/search-state".equals(subpath)) {
+            Response<SearchState> response = lobbyService.getLobbySearchState();
+            ResponseUtils.send(exchange, response.getStatusCode(), response.getBody());
             return;
         }
 

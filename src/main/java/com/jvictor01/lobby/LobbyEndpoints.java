@@ -6,6 +6,7 @@ public class LobbyEndpoints {
     public static final String POSITION_PREFERENCES = "/lol-lobby/v2/lobby/members/localMember/position-preferences";
     public static final String LOBBY_V2_MEMBERS = "/lol-lobby/v2/lobby/members";
     public static final String LOBBY_V2 = "/lol-lobby/v2/lobby";
+    public static final String SEARCH_STATE = "/lol-lobby/v2/lobby/matchmaking/search-state";
     public static final String INVITATIONS_V2 = "/lol-lobby/v2/lobby/invitations";
     public static final String KICK_SUMMONER_BY_SUMMONER_ID = "/lol-lobby/v2/lobby/members/%s/kick";
     public static final String MAPS_V1 = "/lol-maps/v1/maps";
