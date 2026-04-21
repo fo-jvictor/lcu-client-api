@@ -1,10 +1,10 @@
 package com.jvictor01.controllers;
 
 import com.jvictor01.http.Response;
+import com.jvictor01.http.ResponseUtils;
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.lobby.dtos.SearchState;
 import com.jvictor01.matchmaking.MatchmakingService;
-import com.jvictor01.http.ResponseUtils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -38,7 +38,7 @@ public class MatchmakingController implements HttpHandler {
 
         if ("/search".equals(subpath)) {
             HttpResponse<String> response = lobbyService.matchmakingSearch();
-            ResponseUtils.send(exchange, response.statusCode());
+            ResponseUtils.send(exchange, response.statusCode(), response.body());
             return;
         }
 
@@ -56,8 +56,9 @@ public class MatchmakingController implements HttpHandler {
         }
 
         if ("/decline".equalsIgnoreCase(subpath)) {
-            HttpResponse<String> stringHttpResponse = matchmakingService.postReadyCheckDecline();
-            exchange.sendResponseHeaders(stringHttpResponse.statusCode(), stringHttpResponse.body().length());
+            HttpResponse<String> response = matchmakingService.postReadyCheckDecline();
+            ResponseUtils.send(exchange, response.statusCode());
+            return;
         }
 
     }

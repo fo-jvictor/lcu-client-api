@@ -1,5 +1,6 @@
 package com.jvictor01;
 
+import com.jvictor01.app_setup.LeagueApisSetup;
 import com.jvictor01.app_setup.LeagueConnectionsLifecycleManager;
 import com.jvictor01.app_setup.LeagueProcessUtils;
 import com.jvictor01.chat.ChatController;
@@ -9,25 +10,25 @@ import com.jvictor01.riot_client.RiotSignOnService;
 import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
 import com.jvictor01.websockets.lcu.LcuWebsocketClient;
 import com.jvictor01.websockets.riot_client.RiotClientWebSocketClient;
-import com.jvictor01.websockets.riot_messaging_service.RmsMessageDecoder;
-import com.jvictor01.websockets.riot_messaging_service.RmsWebsocketClient;
+import com.jvictor01.websockets.riot_messaging_service.RmsService;
 import com.sun.net.httpserver.HttpServer;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Map;
-import java.util.UUID;
 
 import static com.jvictor01.app_setup.LeagueApisSetup.*;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, AWTException {
 
         LeagueProcessUtils leagueProcessUtils = new LeagueProcessUtils();
         leagueProcessUtils.setUpLeagueClient();
+
+        LeagueApisSetup leagueApisSetup = new LeagueApisSetup();
+        leagueApisSetup.displayConnectionInfo();
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
 
@@ -54,7 +55,7 @@ public class Main {
                     "Accept", "application/json");
 
 
-            var lifecycleManager = new LeagueConnectionsLifecycleManager(new HttpWebClient());
+            var lifecycleManager = new LeagueConnectionsLifecycleManager(new HttpWebClient(), websocketServer);
             lifecycleManager.start();
 
             LcuWebsocketClient lcuWebsocketClient = new LcuWebsocketClient(lcuWebSocket, lcuWebSocketHeaders, websocketServer, lifecycleManager);
@@ -63,21 +64,8 @@ public class Main {
             RiotClientWebSocketClient riotClientWebSocketClient = new RiotClientWebSocketClient(riotClientWebSocket, riotClientWebSocketHeaders);
             riotClientWebSocketClient.connect();
 
-            RiotSignOnService riotSignOnService = new RiotSignOnService();
-            String accessToken = riotSignOnService.getAccessToken();
-
-            String rmsUrl = String.format("wss://us.edge.rms.si.riotgames.com:443/rms/v1/session" +
-                            "?token=%s" +
-                            "&id=%s" +
-                            "&token_type=access" +
-                            "&product_id=riot_client" +
-                            "&platform=windows" +
-                            "&device=desk",
-                    accessToken, UUID.randomUUID());
-
-            URI uri = URI.create(rmsUrl);
-            RmsWebsocketClient rmsClient = new RmsWebsocketClient(uri, new RmsMessageDecoder());
-            rmsClient.connect();
+            RmsService rmsService = new RmsService(new RiotSignOnService());
+            rmsService.setupRmsWebsocket();
 
         } catch (Exception e) {
             e.printStackTrace();

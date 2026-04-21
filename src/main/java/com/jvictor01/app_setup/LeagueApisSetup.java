@@ -60,21 +60,6 @@ public class LeagueApisSetup {
                 }
             }
         }
-        System.out.println("LCU AUTH TOKEN: " + LCU_AUTHORIZATION_TOKEN);
-        System.out.println("LCU PORT: " + LCU_SERVER_PORT);
-
-        System.out.println("RIOT CLIENT PORT: " + RIOT_CLIENT_SERVER_PORT);
-        System.out.println("RIOT CLIENT AUTH TOKEN: " + RIOT_CLIENT_AUTH_TOKEN);
-
-        System.out.println("\nAccess the following QR code via mobile, " +
-                "MAKE SURE YOU'RE CONNECTED IN THE SAME NETWORK AS YOUR PC");
-
-        try {
-            QrCodeGenerator.printQrCode("http://" + getIp() + ":8080");
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
         process.waitFor();
         reader.close();
     }
@@ -83,6 +68,21 @@ public class LeagueApisSetup {
         String passwordToBeEncoded = "riot:" + input;
         byte[] encodedBytes = Base64.getEncoder().encode(passwordToBeEncoded.getBytes());
         return new String(encodedBytes);
+    }
+
+    public void displayConnectionInfo() {
+        System.out.println("LCU AUTH TOKEN: " + LCU_AUTHORIZATION_TOKEN);
+        System.out.println("LCU PORT: " + LCU_SERVER_PORT);
+        System.out.println("RIOT CLIENT PORT: " + RIOT_CLIENT_SERVER_PORT);
+        System.out.println("RIOT CLIENT AUTH TOKEN: " + RIOT_CLIENT_AUTH_TOKEN);
+        System.out.println("\nAccess the following QR code via mobile, " +
+                "MAKE SURE YOU'RE CONNECTED IN THE SAME NETWORK AS YOUR PC");
+
+        try {
+            QrCodeGenerator.printQrCode("http://" + getIp() + ":8080");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getIp() throws SocketException {
