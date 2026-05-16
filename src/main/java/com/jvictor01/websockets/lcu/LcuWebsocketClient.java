@@ -1,6 +1,5 @@
 package com.jvictor01.websockets.lcu;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.utils.trust_manager.SSLContextFactory;
@@ -10,8 +9,9 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 
 public class LcuWebsocketClient extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -20,6 +20,7 @@ public class LcuWebsocketClient extends WebSocketClient {
     private static final String MATCH_FOUND = "Found";
     private boolean readyCheckNotified = false;
     private boolean queueNotified = false;
+    private final Map<Long, LobbyMember> currentLobbyMembers = new HashMap<>();
 
     public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders,
                               FrontendWebsocketConnection frontendWebsocketConnection,
@@ -41,43 +42,35 @@ public class LcuWebsocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         try {
-            Optional.ofNullable(objectMapper.readTree(message))
-                    .map(jsonArray -> jsonArray.get(2))
-                    .map(eventData -> eventData.get("data"))
-                    .ifPresent(data -> {
+            System.out.println("[LCU WS MSG]: " + message);
+            JsonNode root = objectMapper.readTree(message);
+            JsonNode event = root.get(2);
 
-                        String searchState = data.path("searchState").asText(null);
-                        JsonNode readyCheck = data.path("readyCheck");
-                        String readyCheckState = readyCheck.path("state").asText(null);
-                        String playerResponse = readyCheck.path("playerResponse").asText(null);
+            if (event == null) {
+                return;
+            }
 
-                        boolean readyCheckActive = isReadyCheckActive(searchState, readyCheckState, playerResponse);
-                        boolean inQueue = isIsCurrentlyInQueue(data, searchState);
+            String uri = event.path("uri").asText();
+            String eventType = event.path("eventType").asText();
+            JsonNode data = event.path("data");
+            handleMatchmaking(data);
 
-                        if (inQueue && !queueNotified) {
-                            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_STARTED.getValue());
-                            queueNotified = true;
-                        }
+            if ("/lol-lobby/v2/lobby".equals(uri)) {
+                if ("Delete".equalsIgnoreCase(eventType)) {
+                    System.out.println("LOBBY DESTROYED");
+                    currentLobbyMembers.clear();
+                    frontendWebsocketConnection.sendMessage("LOBBY_DESTROYED");
+                    return;
+                }
 
-                        if (!inQueue) {
-                            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_ENDED.getValue());
-                            queueNotified = false;
-                        }
+                JsonNode members = data.path("members");
+                if (members.isArray()) {
+                    handleLobbyMembers(members);
+                }
+            }
 
-                        if (readyCheckActive && !readyCheckNotified) {
-                            readyCheckNotified = true;
-                            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_MATCH_FOUND.getValue());
-                            return;
-                        }
 
-                        boolean readyCheckEnded = isReadyCheckEnded(readyCheckState, playerResponse);
-
-                        if (readyCheckEnded && readyCheckNotified) {
-                            readyCheckNotified = false;
-                        }
-                    });
-
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -95,6 +88,81 @@ public class LcuWebsocketClient extends WebSocketClient {
 //        ex.printStackTrace();
     }
 
+    private void handleLobbyMembers(JsonNode membersNode) {
+        Map<Long, LobbyMember> newMembers = new HashMap<>();
+
+        for (JsonNode memberNode : membersNode) {
+
+            long summonerId = memberNode.path("summonerId").asLong();
+            String summonerName = memberNode.path("summonerName").asText();
+            String firstRole = memberNode.path("firstPositionPreference").asText();
+            String secondRole = memberNode.path("secondPositionPreference").asText();
+
+            LobbyMember member = new LobbyMember(summonerId, summonerName, firstRole, secondRole);
+            newMembers.put(summonerId, member);
+
+            if (!currentLobbyMembers.containsKey(summonerId)) {
+                System.out.println("PLAYER JOINED: " + summonerName);
+                frontendWebsocketConnection.sendMessage("PLAYER_JOINED:" + summonerName);
+                continue;
+            }
+
+            LobbyMember oldMember = currentLobbyMembers.get(summonerId);
+
+            boolean roleChanged = !Objects.equals(oldMember.getFirstRole(), member.getFirstRole())
+                    || !Objects.equals(oldMember.getSecondRole(), member.getSecondRole());
+
+            if (roleChanged) {
+                System.out.println("ROLE CHANGED: " + summonerName + " | " + oldMember.getFirstRole() + "/" + oldMember.getSecondRole() + " -> " + member.getFirstRole() + "/" + member.getSecondRole());
+                frontendWebsocketConnection.sendMessage("ROLE_CHANGED:" + summonerName);
+            }
+        }
+
+        for (LobbyMember oldMember : currentLobbyMembers.values()) {
+            if (!newMembers.containsKey(oldMember.getSummonerId())) {
+                System.out.println("PLAYER LEFT: " + oldMember.getSummonerName());
+                frontendWebsocketConnection.sendMessage("PLAYER_LEFT:" + oldMember.getSummonerName());
+            }
+        }
+
+        currentLobbyMembers.clear();
+        currentLobbyMembers.putAll(newMembers);
+    }
+
+    private void handleMatchmaking(JsonNode data) {
+        String searchState = data.path("searchState").asText(null);
+        JsonNode readyCheck = data.path("readyCheck");
+        String readyCheckState = readyCheck.path("state").asText(null);
+        String playerResponse = readyCheck.path("playerResponse").asText(null);
+        boolean readyCheckActive = isReadyCheckActive(searchState, readyCheckState, playerResponse);
+        boolean inQueue = isCurrentlyInQueue(data, searchState);
+
+        if (inQueue && !queueNotified) {
+            frontendWebsocketConnection
+                    .sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_STARTED.getValue());
+            queueNotified = true;
+        }
+
+        if (!inQueue) {
+            frontendWebsocketConnection
+                    .sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_ENDED.getValue());
+            queueNotified = false;
+        }
+
+        if (readyCheckActive && !readyCheckNotified) {
+            readyCheckNotified = true;
+            frontendWebsocketConnection
+                    .sendMessage(AvailableWebsocketEvents.SEARCH_STATE_MATCH_FOUND.getValue());
+            return;
+        }
+
+        boolean readyCheckEnded = isReadyCheckEnded(readyCheckState, playerResponse);
+
+        if (readyCheckEnded && readyCheckNotified) {
+            readyCheckNotified = false;
+        }
+    }
+
     private boolean isReadyCheckActive(String searchState, String readyCheckState, String playerResponse) {
         return MATCH_FOUND.equalsIgnoreCase(searchState)
                 && "InProgress".equalsIgnoreCase(readyCheckState)
@@ -106,7 +174,7 @@ public class LcuWebsocketClient extends WebSocketClient {
                 || !"None".equalsIgnoreCase(playerResponse);
     }
 
-    private boolean isIsCurrentlyInQueue(JsonNode data, String searchState) {
+    private boolean isCurrentlyInQueue(JsonNode data, String searchState) {
         return "Searching".equalsIgnoreCase(searchState)
                 && data.path("isCurrentlyInQueue").asBoolean();
     }

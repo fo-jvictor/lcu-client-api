@@ -8,26 +8,6 @@ public class LeagueProcessUtils {
 
     private final LeagueApisSetup leagueApisSetup = new LeagueApisSetup();
 
-    private void startLeagueClient() {
-        //TODO: Close riot processes before opening this one, otherwise sometimes it wont work idk why
-        ProcessBuilder builder = new ProcessBuilder();
-        builder.redirectErrorStream(true);
-
-        //TODO: find a way to get the path of the LeagueClientServices.exe dynamically
-        builder.command(
-                "E:\\Riot Games\\Riot Client\\RiotClientServices.exe",
-                "--launch-product=league_of_legends",
-                "--launch-patchline=live",
-                "--client-config-url=https://clientconfig.rpg.riotgames.com"
-        );
-        try {
-            Process process = builder.start();
-            process.waitFor();
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public boolean isLeagueUxRunning() {
         Runtime runtime = Runtime.getRuntime();
         String[] str = {"tasklist"};
@@ -49,7 +29,6 @@ public class LeagueProcessUtils {
     }
 
     public void setUpLeagueClient() {
-        startLeagueClient();
         boolean leagueUxRunning = isLeagueUxRunning();
 
         while (!leagueUxRunning) {

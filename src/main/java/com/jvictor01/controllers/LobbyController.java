@@ -79,6 +79,15 @@ public class LobbyController implements HttpHandler {
             return;
         }
 
+        if ("/invite-summoner-by-id".contains(subpath)) {
+            String rawQuery = exchange.getRequestURI().getRawQuery();
+            String[] splittedUri = rawQuery.split("=");
+            String summonerId = splittedUri[1];
+            HttpResponse<String> response = lobbyService.postInvitationBySummonerId(summonerId);
+            ResponseUtils.send(exchange, response.statusCode());
+            return;
+        }
+
         if ("/remove-summoner".contains(subpath)) {
             String rawQuery = exchange.getRequestURI().getRawQuery();
             String[] splittedUri = rawQuery.split("=");

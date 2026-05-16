@@ -156,5 +156,11 @@ public class LobbyService {
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.POST, Collections.singletonList(invitation));
     }
 
+    public HttpResponse<String> postInvitationBySummonerId(String summonerId) {
+        Invitation invitation = new Invitation();
+        invitation.setToSummonerId(Long.parseLong(summonerId));
+        return httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.POST, Collections.singletonList(invitation));
+    }
+
 
 }
