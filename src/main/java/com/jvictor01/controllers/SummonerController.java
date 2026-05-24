@@ -35,6 +35,14 @@ public class SummonerController implements HttpHandler {
             return;
         }
 
+        if ("/summoner-by-id".equalsIgnoreCase(subpath)) {
+            String rawQuery = exchange.getRequestURI().getRawQuery();
+            String[] split = rawQuery.split("=", 2);
+            String summonerId = split[1];
+            Summoner summonerById = summonerService.getSummonerById(Long.valueOf(summonerId));
+            ResponseUtils.send(exchange, 200, summonerById);
+        }
+
         if ("/profile/background-skin".equalsIgnoreCase(subpath)) {
             BackgroundImageRequest backgroundImageRequest = JsonBodyParser.toDto(exchange, BackgroundImageRequest::new);
             HttpResponse<String> response = summonerService.changeSummonerBackgroundProfileImage(backgroundImageRequest);

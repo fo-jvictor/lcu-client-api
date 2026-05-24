@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import java.net.http.HttpResponse;
 import java.util.Collections;
+import java.util.List;
 
 public class SummonerService {
     private final ObjectMapper objectMapper;
@@ -27,13 +28,7 @@ public class SummonerService {
 
     //nickname format is: ingamename#tag
     public Summoner[] getSummonerDetailsByNickname(String nickname) {
-        String requestBody = null;
-        try {
-            requestBody = objectMapper.writeValueAsString(Collections.singletonList(nickname));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
+        List<String> requestBody = Collections.singletonList(nickname);
         HttpResponse<String> response = httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_DETAILS, HttpMethods.POST, requestBody);
 
         try {

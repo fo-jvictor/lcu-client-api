@@ -12,9 +12,7 @@ import com.jvictor01.summoners.dtos.Summoner;
 import org.json.JSONObject;
 
 import java.net.http.HttpResponse;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class LobbyService {
     private final HttpWebClient httpWebClient;
@@ -118,6 +116,26 @@ public class LobbyService {
         return httpWebClient.buildRequestForLcu(formattedUri, HttpMethods.POST);
     }
 
+    public Response<LobbyRoles> getPlayerSlots() {
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.PLAYER_SLOTS, HttpMethods.GET);
+        try {
+            List<PlayerSlots> playerSlots = objectMapper.readValue(response.body(), new TypeReference<>() {
+            });
+            LobbyRoles lobbyRoles = new LobbyRoles();
+
+            PlayerSlots playerSlots1 = playerSlots.get(0);
+            lobbyRoles.setFirstPreference(playerSlots1.getPositionPreference());
+
+            PlayerSlots playerSlots2 = playerSlots.get(1);
+            lobbyRoles.setSecondPreference(playerSlots2.getPositionPreference());
+
+            return new Response<>(response.statusCode(), lobbyRoles);
+
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public Response<List<GameQueue>> getAvailableGameQueues() {
 
         HttpResponse<String> response =
@@ -144,14 +162,12 @@ public class LobbyService {
         }
     }
 
-
     public HttpResponse<String> postInvitationByNickname(String nickname, String tag) {
-        String puuid = summonerService.getSummonerPuuidByNicknameAndTagLine(nickname, tag);
-        Summoner summoner = summonerService.getSummonerByPuuid(puuid);
+        Summoner[] summoners = summonerService.getSummonerDetailsByNickname(nickname + "#" + tag);
 
         Invitation invitation = new Invitation();
-        invitation.setToSummonerId(summoner.getSummonerId());
-        invitation.setToSummonerName(summoner.getGameName());
+        invitation.setToSummonerId(summoners[0].getSummonerId());
+        invitation.setToSummonerName(summoners[0].getGameName());
 
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.POST, Collections.singletonList(invitation));
     }
@@ -160,6 +176,29 @@ public class LobbyService {
         Invitation invitation = new Invitation();
         invitation.setToSummonerId(Long.parseLong(summonerId));
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.POST, Collections.singletonList(invitation));
+    }
+
+    public Response<List<Invitation>> getInvitations() {
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.INVITATIONS_V2, HttpMethods.GET);
+        Summoner myself = summonerService.loadOwnSummonerDetails();
+        ArrayList<Invitation> filteredInvitations = new ArrayList<>();
+
+        try {
+            List<Invitation> invitations = objectMapper.readValue(response.body(), new TypeReference<>() {
+            });
+
+            invitations.stream()
+                    .filter(invitation -> !Objects.equals(myself.getPuuid(), invitation.getToPuuid()))
+                    .peek(invitation -> {
+                        Summoner summonerByPuuid = summonerService.getSummonerByPuuid(invitation.getToPuuid());
+                        invitation.setToSummonerName(getSummonerName(summonerByPuuid));
+                    })
+                    .forEach(filteredInvitations::add);
+
+            return new Response<>(response.statusCode(), filteredInvitations);
+        } catch (JsonProcessingException e) {
+            return new Response<>(response.statusCode(), null);
+        }
     }
 
 

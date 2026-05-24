@@ -11,6 +11,10 @@ public class LobbyRoles {
         this.secondPreference = jsonObject.getString("secondPreference");
     }
 
+    public LobbyRoles() {
+
+    }
+
     public void setFirstPreference(String firstPreference) {
         this.firstPreference = firstPreference;
     }

@@ -1,10 +1,14 @@
 package com.jvictor01.lobby.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Invitation {
     private String invitationId;
     private String invitationType;
     private String state;
     private String timestamp;
+    private String toPuuid;
     private long toSummonerId;
     private String toSummonerName;
 
@@ -18,6 +22,14 @@ public class Invitation {
 
     public void setInvitationType(String invitationType) {
         this.invitationType = invitationType;
+    }
+
+    public String getToPuuid() {
+        return toPuuid;
+    }
+
+    public void setToPuuid(String toPuuid) {
+        this.toPuuid = toPuuid;
     }
 
     public void setState(String state) {

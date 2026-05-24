@@ -3,10 +3,7 @@ package com.jvictor01.controllers;
 import com.jvictor01.http.Response;
 import com.jvictor01.http.ResponseUtils;
 import com.jvictor01.lobby.LobbyService;
-import com.jvictor01.lobby.dtos.GameQueue;
-import com.jvictor01.lobby.dtos.LobbyRoles;
-import com.jvictor01.lobby.dtos.LobbySettings;
-import com.jvictor01.lobby.dtos.SuggestedPlayer;
+import com.jvictor01.lobby.dtos.*;
 import com.jvictor01.utils.JsonBodyParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -66,6 +63,18 @@ public class LobbyController implements HttpHandler {
             LobbyRoles lobbyRoles = JsonBodyParser.toDto(exchange, LobbyRoles::new);
             HttpResponse<String> response = lobbyService.updatePositionPreferences(lobbyRoles);
             ResponseUtils.send(exchange, response.statusCode());
+            return;
+        }
+
+        if (subpath.contains("/player-slots")) {
+            Response<LobbyRoles> lobbyRoles = lobbyService.getPlayerSlots();
+            ResponseUtils.send(exchange, lobbyRoles.getStatusCode(), lobbyRoles);
+            return;
+        }
+
+        if ("/invitations".contains(subpath)) {
+            Response<List<Invitation>> invitations = lobbyService.getInvitations();
+            ResponseUtils.send(exchange, invitations.getStatusCode(), invitations);
             return;
         }
 
