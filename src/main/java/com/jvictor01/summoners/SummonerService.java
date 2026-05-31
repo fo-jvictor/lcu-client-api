@@ -61,26 +61,6 @@ public class SummonerService {
         }
     }
 
-    public String getSummonerPuuidByNicknameAndTagLine(String gameName, String tagLine) {
-        HttpResponse<String> response =
-                httpWebClient.buildRequestForLcu(SummonerEndpoints.SUMMONER_ALIAS_LOOKUP + "?gameName=" + gameName + "&tagLine=" + tagLine, HttpMethods.GET);
-
-        try {
-            JsonNode rootNode = objectMapper.readTree(response.body());
-            JsonNode attributeNode = rootNode.path("puuid");
-
-            if (!attributeNode.isMissingNode()) {
-                return attributeNode.asText();
-            }
-
-            throw new RuntimeException("puuid not found for given gameName: " + gameName + " and tagLine: #" + tagLine);
-
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     //Change riot id bypassing email validation
     public void changeRiotId(String newNickname, String newTagLine) {
         String requestBody = null;
