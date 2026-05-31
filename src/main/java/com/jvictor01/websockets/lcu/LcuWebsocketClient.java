@@ -42,7 +42,6 @@ public class LcuWebsocketClient extends WebSocketClient {
     @Override
     public void onMessage(String message) {
         try {
-            System.out.println("[LCU WS MSG]: " + message);
             JsonNode root = objectMapper.readTree(message);
             JsonNode event = root.get(2);
 
@@ -53,16 +52,24 @@ public class LcuWebsocketClient extends WebSocketClient {
             String uri = event.path("uri").asText();
             String eventType = event.path("eventType").asText();
             JsonNode data = event.path("data");
-            handleMatchmaking(data);
+
+            if (uri.contains("/lol-matchmaking")) {
+                handleMatchmaking(data);
+            }
+
+            if ("/lol-lobby/v2/lobby".equals(uri) && "Delete".equalsIgnoreCase(eventType)) {
+                currentLobbyMembers.clear();
+                frontendWebsocketConnection.sendMessage("LOBBY_DESTROYED");
+            }
+
+            if ("/lol-lobby/v2/lobby/members".equals(uri)) {
+                if (data.isArray()) {
+                    handleLobbyMembers(data);
+                }
+                return;
+            }
 
             if ("/lol-lobby/v2/lobby".equals(uri)) {
-                if ("Delete".equalsIgnoreCase(eventType)) {
-                    System.out.println("LOBBY DESTROYED");
-                    currentLobbyMembers.clear();
-                    frontendWebsocketConnection.sendMessage("LOBBY_DESTROYED");
-                    return;
-                }
-
                 JsonNode members = data.path("members");
                 if (members.isArray()) {
                     handleLobbyMembers(members);
@@ -102,9 +109,10 @@ public class LcuWebsocketClient extends WebSocketClient {
             newMembers.put(summonerId, member);
 
             if (!currentLobbyMembers.containsKey(summonerId)) {
-                System.out.println("PLAYER JOINED: " + summonerName);
-                frontendWebsocketConnection.sendMessage("PLAYER_JOINED:" + summonerName);
-                continue;
+//                System.out.println("PLAYER JOINED: " + summonerName);
+//                WebsocketMessage websocketMessage = new WebsocketMessage(AvailableWebsocketEvents.PLAYER_JOINED_LOBBY, member);
+//                frontendWebsocketConnection.sendMessage(writeValueAsString(websocketMessage));
+//                continue;
             }
 
             LobbyMember oldMember = currentLobbyMembers.get(summonerId);
@@ -114,14 +122,14 @@ public class LcuWebsocketClient extends WebSocketClient {
 
             if (roleChanged) {
                 System.out.println("ROLE CHANGED: " + summonerName + " | " + oldMember.getFirstRole() + "/" + oldMember.getSecondRole() + " -> " + member.getFirstRole() + "/" + member.getSecondRole());
-                frontendWebsocketConnection.sendMessage("ROLE_CHANGED:" + summonerName);
+                //frontendWebsocketConnection.sendMessage("ROLE_CHANGED:" + summonerName);
             }
         }
 
         for (LobbyMember oldMember : currentLobbyMembers.values()) {
             if (!newMembers.containsKey(oldMember.getSummonerId())) {
                 System.out.println("PLAYER LEFT: " + oldMember.getSummonerName());
-                frontendWebsocketConnection.sendMessage("PLAYER_LEFT:" + oldMember.getSummonerName());
+                //frontendWebsocketConnection.sendMessage(writeValueAsString(websocketMessage));
             }
         }
 
