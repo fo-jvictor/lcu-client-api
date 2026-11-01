@@ -1,74 +1,69 @@
-# 🧩 lcu-client-api
+# lcu-client-api
 
-Este projeto é responsável por estabelecer uma conexão local com a League Client Update API (LCU API) do League of Legends.
-Ele expõe uma API REST para que outras aplicações possam acessar informações do client do jogo em tempo real.
+A local Java backend that connects to the League of Legends Client (LCU API) and the Riot Client, and exposes a simplified REST API plus real-time events so other applications, such as the bundled web UI, can read and control the client. The main use case is controlling the client from your phone: on startup the app prints a QR code with its LAN address.
 
-🚀 Tecnologias Utilizadas
+## Tech stack
 
-- **Java 17+**
-- **HTTP Server Nativo** (`com.sun.net.httpserver.HttpServer`)
-- **Manipulação de JSON:** Jackson
-- **Cliente HTTP:** `java.net.http.HttpClient` configurado para aceitar qualquer certificado SSL (bypass da validação padrão)
+- Java 21 (Gradle, Shadow plugin for the fat jar)
+- Native HTTP server (`com.sun.net.httpserver.HttpServer`)
+- `java.net.http.HttpClient` for LCU / Riot Client requests
+- Jackson and `org.json` for JSON
+- `Java-WebSocket` for the LCU, Riot Client and Riot Messaging Service websockets
+- ZXing for the QR code
+- Lombok
 
-🔧 Detalhes da Implementação
-Comunicação com a LCU API é feita via HTTPS, utilizando um SSLContext personalizado que aceita todos os certificados.
-Esse mecanismo é necessário, pois o League Client gera certificados que não são reconhecidos por autoridades públicas.
+## How it works
 
-A implementação do TrustAnyTrustManager e SSLContextFactory permite que o HttpClient ignore verificações de certificado durante as requisições.
+1. **Client discovery:** the app waits until `LeagueClientUx.exe` is running, then reads the `lockfile` of the League Client and the Riot Client to get each one's port and auth token. The League install folder is resolved dynamically. It checks, in order:
+   - the folder of the running client process
+   - Riot's metadata in `%PROGRAMDATA%\Riot Games` (`product_settings.yaml` and `RiotClientInstalls.json`)
+   - the default folder `C:\Riot Games\League of Legends`
 
-```java
-public class TrustAnyTrustManager implements X509TrustManager {
-    @Override
-    public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-    }
+   The Riot Client lockfile is read from `%LOCALAPPDATA%\Riot Games\Riot Client\Config`.
+2. **TLS:** both clients use self-signed certificates, so requests go through a trust-all `SSLContext` (`utils/trust_manager`).
+3. **Riot Messaging Service:** besides the local clients, the app opens a websocket to Riot's RMS edge (`us.edge.rms.si.riotgames.com`), authenticated with the Riot Client's sign-on token.
+4. **Connection lifecycle:** `LeagueConnectionsLifecycleManager` tracks the LCU state (down, available, websocket connected). When the client closes or restarts, it re-reads the lockfiles, reconnects the websocket and notifies the frontend.
+5. **Events:** the app subscribes to LCU websocket events and forwards the relevant ones to connected frontends.
 
-    @Override
-    public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
-    }
+## Exposed interfaces
 
-    @Override
-    public X509Certificate[] getAcceptedIssuers() {
-        return null;
-    }
-}
+| Interface | Address |
+|---|---|
+| REST API and web UI | `http://<host>:8080` |
+| Frontend websocket | port `200` |
 
-public class SSLContextFactory {
-    public static SSLContext createTrustAllSSLContext() {
-        SSLContext context = null;
-        try {
-            context = SSLContext.getInstance("TLS");
-            context.init(null, new TrustManager[]{new TrustAnyTrustManager()}, new SecureRandom());
-        } catch (NoSuchAlgorithmException | KeyManagementException e) {
-            throw new RuntimeException(e);
-        }
-        return context;
-    }
-}
+REST routes:
 
-```
-O HttpClient é criado da seguinte forma:
+| Base path | Routes |
+|---|---|
+| `/api/lobby` | `create`, `current-lobby`, `current-game-queue`, `available-queues`, `suggested-players`, `player-slots`, `update-positions-preference`, `invitations`, `invite-summoner`, `invite-summoner-by-id`, `remove-summoner` |
+| `/api/matchmaking` | `search-state`, `search`, `cancel`, `accept`, `decline` |
+| `/api/summoners` | `myself`, `summoner-by-id`, `profile/background-skin` |
+| `/api/gameflow` | `session` |
+| `/api/chat` | `me`, `update-league-rank` |
 
-```java
-HttpClient client = HttpClient.newBuilder()
-    .sslContext(SSLContextFactory.createTrustAllSSLContext())
-    .build();
+Websocket events sent to the frontend: queue started/ended, match found, LCU connection lost/restored, and lobby member updates.
 
+## Running
+
+Requirements: Windows, JDK 21, and the League of Legends client installed.
+
+```bash
+./gradlew build
 ```
 
-## 🛠️ Funcionalidades Implementadas
+```bash
+java -jar build/libs/lcu-client-api.jar
+```
 
-- Conexão automática ao League Client.
-- Exposição de endpoints HTTP locais para:
-  - Estado do jogo.
-  - Informações do lobby e jogadores.
-  - Modos de jogo disponíveis.
-- Conexão ao WebSocket da Riot Games utilizando a biblioteca `org.java_websocket.client.WebSocketClient`, permitindo:
-  - Inscrição e escuta de **todos os eventos** emitidos pelo client do League of Legends.
-  - Reação em tempo real a mudanças como criação de lobby, início de partidas, alterações no status dos jogadores, entre outros.
+Start the League client (before or after the app). Then open the printed URL or scan the QR code from a device on the same network.
 
-## ✨ Melhorias Futuras
-- Adição de novos endpoints da LCU para expandir a quantidade de dados disponíveis (ex.: informações de partidas ranqueadas, histórico de partidas, personalização de runas).
-- Refatoração da estrutura do projeto visando maior modularização, clareza e escalabilidade.
-- Melhor tratamento de reconexão automática ao WebSocket em caso de quedas.
-- Melhor tratamento de erros e respostas HTTP, retornando mensagens mais amigáveis.
+The build also compiles the Vue frontend (`lcu-client-api-vue`) and copies it into `src/main/resources/web`. Its location is hardcoded in `build.gradle` (`frontendDir`), so update that path on another machine.
 
+The app adds a system tray icon with an Exit option.
+
+## Future improvements
+
+- More LCU endpoints (ranked info, match history, runes)
+- Better error handling and friendlier HTTP error responses
+- Further modularization of the project structure
