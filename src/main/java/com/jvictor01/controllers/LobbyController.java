@@ -41,8 +41,14 @@ public class LobbyController implements HttpHandler {
             return;
         }
 
-        if ("/current".equals(subpath)) {
-            Response<GameQueue> gameQueueResponse = lobbyService.getCurrentLobby();
+        if ("/current-lobby".equalsIgnoreCase(subpath)) {
+            Response<Lobby> currentLobby = lobbyService.getCurrentLobby();
+            ResponseUtils.send(exchange, currentLobby.getStatusCode(), currentLobby.getBody());
+            return;
+        }
+
+        if ("/current-game-queue".equals(subpath)) {
+            Response<GameQueue> gameQueueResponse = lobbyService.getCurrentGameQueue();
             ResponseUtils.send(exchange, gameQueueResponse.getStatusCode(), gameQueueResponse.getBody());
             return;
         }

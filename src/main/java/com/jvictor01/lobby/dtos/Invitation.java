@@ -1,8 +1,12 @@
 package com.jvictor01.lobby.dtos;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Getter;
+import lombok.Setter;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
+@Setter
+@Getter
 public class Invitation {
     private String invitationId;
     private String invitationType;
@@ -14,61 +18,5 @@ public class Invitation {
 
     public Invitation() {
 
-    }
-
-    public void setInvitationId(String invitationId) {
-        this.invitationId = invitationId;
-    }
-
-    public void setInvitationType(String invitationType) {
-        this.invitationType = invitationType;
-    }
-
-    public String getToPuuid() {
-        return toPuuid;
-    }
-
-    public void setToPuuid(String toPuuid) {
-        this.toPuuid = toPuuid;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public void setTimestamp(String timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public void setToSummonerId(long toSummonerId) {
-        this.toSummonerId = toSummonerId;
-    }
-
-    public void setToSummonerName(String toSummonerName) {
-        this.toSummonerName = toSummonerName;
-    }
-
-    public String getInvitationId() {
-        return invitationId;
-    }
-
-    public String getInvitationType() {
-        return invitationType;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public String getTimestamp() {
-        return timestamp;
-    }
-
-    public long getToSummonerId() {
-        return toSummonerId;
-    }
-
-    public String getToSummonerName() {
-        return toSummonerName;
     }
 }

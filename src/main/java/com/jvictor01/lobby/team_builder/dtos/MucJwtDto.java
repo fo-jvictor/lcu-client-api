@@ -1,7 +1,11 @@
 package com.jvictor01.lobby.team_builder.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import org.json.JSONObject;
 
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MucJwtDto {
     private String jwt;
     private String channelClaim;
@@ -19,35 +23,4 @@ public class MucJwtDto {
 
     }
 
-    public void setJwt(String jwt) {
-        this.jwt = jwt;
-    }
-
-    public void setChannelClaim(String channelClaim) {
-        this.channelClaim = channelClaim;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public void setTargetRegion(String targetRegion) {
-        this.targetRegion = targetRegion;
-    }
-
-    public String getJwt() {
-        return jwt;
-    }
-
-    public String getChannelClaim() {
-        return channelClaim;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public String getTargetRegion() {
-        return targetRegion;
-    }
 }

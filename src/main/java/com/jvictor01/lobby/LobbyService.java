@@ -47,7 +47,38 @@ public class LobbyService {
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.POST, lobbySettings);
     }
 
-    public Response<GameQueue> getCurrentLobby() {
+    public Response<Lobby> getCurrentLobby() {
+        HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.GET);
+        Summoner myself = summonerService.loadOwnSummonerDetails();
+        try {
+            Lobby lobby = objectMapper.readValue(response.body(), Lobby.class);
+
+            List<Member> membersWithSummonerName = lobby.getMembers().stream().peek(member -> {
+                if (member.getSummonerInternalName() == null || member.getSummonerInternalName().isEmpty() ||
+                        member.getSummonerName() == null || member.getSummonerName().isEmpty()) {
+                    Summoner summonerByPuuid = summonerService.getSummonerByPuuid(member.getPuuid());
+                    member.setSummonerName(getSummonerName(summonerByPuuid));
+                }
+            }).toList();
+
+            lobby.setMembers(membersWithSummonerName);
+
+            List<Invitation> invitations = lobby.getInvitations().stream()
+                    .filter(invitation -> !Objects.equals(myself.getPuuid(), invitation.getToPuuid()))
+                    .peek(invitation -> {
+                Summoner summonerByPuuid = summonerService.getSummonerByPuuid(invitation.getToPuuid());
+                invitation.setToSummonerName(getSummonerName(summonerByPuuid));
+            }).toList();
+
+            lobby.setInvitations(invitations);
+
+            return new Response<>(response.statusCode(), lobby);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Response<GameQueue> getCurrentGameQueue() {
         HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2, HttpMethods.GET);
         JSONObject gameConfig = new JSONObject(response.body()).getJSONObject("gameConfig");
         Integer queueId = (Integer) gameConfig.get("queueId");
