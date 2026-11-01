@@ -1,7 +1,9 @@
 package com.jvictor01.chat;
 
 import com.jvictor01.chat.dtos.Chat;
+import com.jvictor01.chat.dtos.UpdateChatIcon;
 import com.jvictor01.chat.dtos.UpdateRankedData;
+import com.jvictor01.chat.dtos.UpdateStatusMessage;
 import com.jvictor01.controllers.RequestRouteHelper;
 import com.jvictor01.http.Response;
 import com.jvictor01.http.ResponseUtils;
@@ -39,6 +41,18 @@ public class ChatController implements HttpHandler {
             UpdateRankedData updateRankedData = JsonBodyParser.toDto(exchange, UpdateRankedData::new);
             HttpResponse<String> response = chatService.updateRankedQueueData(updateRankedData);
             ResponseUtils.send(exchange, response.statusCode());
+        }
+
+        if ("/icon".equalsIgnoreCase(subpath)) {
+            UpdateChatIcon updateChatIcon = JsonBodyParser.toDto(exchange, UpdateChatIcon::new);
+            HttpResponse<String> response = chatService.updateChatIcon(updateChatIcon);
+            ResponseUtils.send(exchange, response.statusCode(), response.body());
+        }
+
+        if ("/status-message".equalsIgnoreCase(subpath)) {
+            UpdateStatusMessage updateStatusMessage = JsonBodyParser.toDto(exchange, UpdateStatusMessage::new);
+            HttpResponse<String> response = chatService.updateStatusMessage(updateStatusMessage);
+            ResponseUtils.send(exchange, response.statusCode(), response.body());
         }
     }
 }
