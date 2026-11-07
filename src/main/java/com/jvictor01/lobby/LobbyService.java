@@ -27,7 +27,7 @@ public class LobbyService {
 
     public HttpResponse<String> matchmakingSearch() {
         return httpWebClient.buildRequestForLcu(LobbyEndpoints.LOBBY_V2_MATCHMAKING_SEARCH, HttpMethods.POST);
-    }
+    } 
 
     public Response<SearchState> getLobbySearchState() {
         HttpResponse<String> response = httpWebClient.buildRequestForLcu(LobbyEndpoints.SEARCH_STATE, HttpMethods.GET);

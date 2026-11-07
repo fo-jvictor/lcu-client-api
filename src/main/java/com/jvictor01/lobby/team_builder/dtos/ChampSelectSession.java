@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChampSelectSession {
-    private int gameId;
+    private long gameId;
     private Timer timer;
     private ChatDetails chatDetails;
     private List<TeamMember> myTeam;
@@ -34,7 +34,7 @@ public class ChampSelectSession {
     private boolean hasSimultaneousPicks;
 
     public ChampSelectSession(JSONObject jsonObject) {
-        this.gameId = jsonObject.getInt("gameId");
+        this.gameId = jsonObject.getLong("gameId");
         this.timer = new Timer(jsonObject.getJSONObject("timer"));
         this.chatDetails = new ChatDetails(jsonObject.getJSONObject("chatDetails"));
         this.myTeam = parseTeam(jsonObject.getJSONArray("myTeam"));
@@ -104,7 +104,7 @@ public class ChampSelectSession {
         return benchChampions;
     }
 
-    public void setGameId(int gameId) {
+    public void setGameId(long gameId) {
         this.gameId = gameId;
     }
 
@@ -204,7 +204,7 @@ public class ChampSelectSession {
         this.hasSimultaneousPicks = hasSimultaneousPicks;
     }
 
-    public int getGameId() {
+    public long getGameId() {
         return gameId;
     }
 

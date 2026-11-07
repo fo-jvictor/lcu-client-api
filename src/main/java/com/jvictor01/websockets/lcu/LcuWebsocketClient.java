@@ -2,6 +2,9 @@ package com.jvictor01.websockets.lcu;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jvictor01.gameflow.GameflowStateEnum;
+import com.jvictor01.matchmaking.AutoAcceptSettings;
+import com.jvictor01.matchmaking.MatchmakingService;
 import com.jvictor01.utils.trust_manager.SSLContextFactory;
 import com.jvictor01.websockets.frontend_connection.AvailableWebsocketEvents;
 import com.jvictor01.websockets.frontend_connection.FrontendWebsocketConnection;
@@ -9,9 +12,7 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class LcuWebsocketClient extends WebSocketClient {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -20,7 +21,8 @@ public class LcuWebsocketClient extends WebSocketClient {
     private static final String MATCH_FOUND = "Found";
     private boolean readyCheckNotified = false;
     private boolean queueNotified = false;
-    private final Map<Long, LobbyMember> currentLobbyMembers = new HashMap<>();
+    private boolean champSelectNotified = false;
+    private final MatchmakingService matchmakingService = new MatchmakingService();
 
     public LcuWebsocketClient(URI serverUri, Map<String, String> httpHeaders,
                               FrontendWebsocketConnection frontendWebsocketConnection,
@@ -36,6 +38,7 @@ public class LcuWebsocketClient extends WebSocketClient {
         System.out.println("Connected to LCU WebSocket");
         this.send(LcuWebsocketEvents.LOBBY_INFORMATION);
         this.send(LcuWebsocketEvents.MATCHMAKING_READY_CHECK);
+        this.send(LcuWebsocketEvents.GAMEFLOW_PHASE);
         this.webSocketEventListener.onOpen();
     }
 
@@ -57,25 +60,14 @@ public class LcuWebsocketClient extends WebSocketClient {
                 handleMatchmaking(data);
             }
 
-            if ("/lol-lobby/v2/lobby".equals(uri) && "Delete".equalsIgnoreCase(eventType)) {
-                currentLobbyMembers.clear();
-                frontendWebsocketConnection.sendMessage("LOBBY_DESTROYED");
-            }
-
-            if ("/lol-lobby/v2/lobby/members".equals(uri)) {
-                if (data.isArray()) {
-                    handleLobbyMembers(data);
-                }
+            if ("/lol-gameflow/v1/gameflow-phase".equals(uri)) {
+                handleGameflowPhase(data.asText());
                 return;
             }
 
-            if ("/lol-lobby/v2/lobby".equals(uri)) {
-                JsonNode members = data.path("members");
-                if (members.isArray()) {
-                    handleLobbyMembers(members);
-                }
+            if ("/lol-lobby/v2/lobby".equals(uri) && "Delete".equalsIgnoreCase(eventType)) {
+                frontendWebsocketConnection.sendMessage("LOBBY_DESTROYED");
             }
-
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -93,48 +85,6 @@ public class LcuWebsocketClient extends WebSocketClient {
     @Override
     public void onError(Exception ex) {
 //        ex.printStackTrace();
-    }
-
-    private void handleLobbyMembers(JsonNode membersNode) {
-        Map<Long, LobbyMember> newMembers = new HashMap<>();
-
-        for (JsonNode memberNode : membersNode) {
-
-            long summonerId = memberNode.path("summonerId").asLong();
-            String summonerName = memberNode.path("summonerName").asText();
-            String firstRole = memberNode.path("firstPositionPreference").asText();
-            String secondRole = memberNode.path("secondPositionPreference").asText();
-
-            LobbyMember member = new LobbyMember(summonerId, summonerName, firstRole, secondRole);
-            newMembers.put(summonerId, member);
-
-            if (!currentLobbyMembers.containsKey(summonerId)) {
-//                System.out.println("PLAYER JOINED: " + summonerName);
-//                WebsocketMessage websocketMessage = new WebsocketMessage(AvailableWebsocketEvents.PLAYER_JOINED_LOBBY, member);
-//                frontendWebsocketConnection.sendMessage(writeValueAsString(websocketMessage));
-//                continue;
-            }
-
-            LobbyMember oldMember = currentLobbyMembers.get(summonerId);
-
-            boolean roleChanged = !Objects.equals(oldMember.getFirstRole(), member.getFirstRole())
-                    || !Objects.equals(oldMember.getSecondRole(), member.getSecondRole());
-
-            if (roleChanged) {
-                System.out.println("ROLE CHANGED: " + summonerName + " | " + oldMember.getFirstRole() + "/" + oldMember.getSecondRole() + " -> " + member.getFirstRole() + "/" + member.getSecondRole());
-                //frontendWebsocketConnection.sendMessage("ROLE_CHANGED:" + summonerName);
-            }
-        }
-
-        for (LobbyMember oldMember : currentLobbyMembers.values()) {
-            if (!newMembers.containsKey(oldMember.getSummonerId())) {
-                System.out.println("PLAYER LEFT: " + oldMember.getSummonerName());
-                //frontendWebsocketConnection.sendMessage(writeValueAsString(websocketMessage));
-            }
-        }
-
-        currentLobbyMembers.clear();
-        currentLobbyMembers.putAll(newMembers);
     }
 
     private void handleMatchmaking(JsonNode data) {
@@ -159,6 +109,13 @@ public class LcuWebsocketClient extends WebSocketClient {
 
         if (readyCheckActive && !readyCheckNotified) {
             readyCheckNotified = true;
+
+            if (AutoAcceptSettings.isEnabled() && autoAcceptReadyCheck()) {
+                frontendWebsocketConnection
+                        .sendMessage(AvailableWebsocketEvents.SEARCH_STATE_MATCH_AUTO_ACCEPTED.getValue());
+                return;
+            }
+
             frontendWebsocketConnection
                     .sendMessage(AvailableWebsocketEvents.SEARCH_STATE_MATCH_FOUND.getValue());
             return;
@@ -168,6 +125,32 @@ public class LcuWebsocketClient extends WebSocketClient {
 
         if (readyCheckEnded && readyCheckNotified) {
             readyCheckNotified = false;
+        }
+    }
+
+    private void handleGameflowPhase(String phase) {
+        boolean inChampSelect = GameflowStateEnum.CHAMP_SELECT.getState().equalsIgnoreCase(phase);
+
+        if (inChampSelect && !champSelectNotified) {
+            champSelectNotified = true;
+            frontendWebsocketConnection
+                    .sendMessage(AvailableWebsocketEvents.CHAMP_SELECT_STARTED.getValue());
+            return;
+        }
+
+        if (!inChampSelect && champSelectNotified) {
+            champSelectNotified = false;
+            frontendWebsocketConnection
+                    .sendMessage(AvailableWebsocketEvents.CHAMP_SELECT_ENDED.getValue());
+        }
+    }
+
+    private boolean autoAcceptReadyCheck() {
+        try {
+            int statusCode = matchmakingService.postReadyCheckAccept().statusCode();
+            return statusCode >= 200 && statusCode < 300;
+        } catch (Exception e) {
+            return false;
         }
     }
 

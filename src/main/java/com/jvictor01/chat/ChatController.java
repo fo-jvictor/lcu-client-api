@@ -1,6 +1,9 @@
 package com.jvictor01.chat;
 
+import com.jvictor01.chat.dtos.BotFriendRequest;
 import com.jvictor01.chat.dtos.Chat;
+import com.jvictor01.chat.dtos.ChatParticipant;
+import com.jvictor01.chat.dtos.DeclineBotsResult;
 import com.jvictor01.chat.dtos.UpdateChatIcon;
 import com.jvictor01.chat.dtos.UpdateRankedData;
 import com.jvictor01.chat.dtos.UpdateStatusMessage;
@@ -13,9 +16,11 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.net.http.HttpResponse;
+import java.util.List;
 
 public class ChatController implements HttpHandler {
     private ChatService chatService = new ChatService();
+    private final FriendRequestService friendRequestService = new FriendRequestService();
     private final String basePath = "/api/chat";
 
     @Override
@@ -34,6 +39,24 @@ public class ChatController implements HttpHandler {
         if ("/me".equalsIgnoreCase(subpath)) {
             Response<Chat> chatInformation = chatService.getChatInformation();
             ResponseUtils.send(exchange, chatInformation.getStatusCode(), chatInformation);
+            return;
+        }
+
+        if ("/champ-select-participants".equalsIgnoreCase(subpath)) {
+            Response<List<ChatParticipant>> response = chatService.getChampSelectParticipants();
+            ResponseUtils.send(exchange, response.getStatusCode(), response.getBody());
+            return;
+        }
+
+        if ("/friend-requests/bots".equalsIgnoreCase(subpath)) {
+            Response<List<BotFriendRequest>> response = friendRequestService.findBotFriendRequests();
+            ResponseUtils.send(exchange, response.getStatusCode(), response.getBody());
+            return;
+        }
+
+        if ("/friend-requests/bots/decline".equalsIgnoreCase(subpath) && "POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            Response<DeclineBotsResult> response = friendRequestService.declineBotFriendRequests();
+            ResponseUtils.send(exchange, response.getStatusCode(), response.getBody());
             return;
         }
 

@@ -15,4 +15,8 @@ public class LcuWebsocketEvents {
     public static final String MATCHMAKING_READY_CHECK = """
             [5, "OnJsonApiEvent_lol-matchmaking_v1_search"]
             """;
+
+    public static final String GAMEFLOW_PHASE = """
+            [5, "OnJsonApiEvent_lol-gameflow_v1_gameflow-phase"]
+            """;
 }

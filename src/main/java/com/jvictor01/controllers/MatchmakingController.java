@@ -4,7 +4,10 @@ import com.jvictor01.http.Response;
 import com.jvictor01.http.ResponseUtils;
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.lobby.dtos.SearchState;
+import com.jvictor01.matchmaking.AutoAcceptSettings;
 import com.jvictor01.matchmaking.MatchmakingService;
+import com.jvictor01.matchmaking.dtos.AutoAccept;
+import com.jvictor01.utils.JsonBodyParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -61,5 +64,15 @@ public class MatchmakingController implements HttpHandler {
             return;
         }
 
+        if ("/auto-accept".equalsIgnoreCase(subpath)) {
+            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                AutoAccept autoAccept = JsonBodyParser.toDto(exchange, AutoAccept::new);
+                AutoAcceptSettings.setEnabled(autoAccept.isEnabled());
+            }
+            ResponseUtils.send(exchange, 200, new AutoAccept(AutoAcceptSettings.isEnabled()));
+            return;
+        }
+
     }
 }
+
