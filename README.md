@@ -58,8 +58,6 @@ java -jar build/libs/lcu-client-api.jar
 
 Start the League client (before or after the app). Then open the printed URL or scan the QR code from a device on the same network.
 
-The build also compiles the Vue frontend (`lcu-client-api-vue`) and copies it into `src/main/resources/web`. Its location is hardcoded in `build.gradle` (`frontendDir`), so update that path on another machine.
-
 The app adds a system tray icon with an Exit option.
 
 ## Future improvements
