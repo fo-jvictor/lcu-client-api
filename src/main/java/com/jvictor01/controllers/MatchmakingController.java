@@ -4,7 +4,7 @@ import com.jvictor01.http.Response;
 import com.jvictor01.http.ResponseUtils;
 import com.jvictor01.lobby.LobbyService;
 import com.jvictor01.lobby.dtos.SearchState;
-import com.jvictor01.matchmaking.AutoAcceptSettings;
+import com.jvictor01.matchmaking.dtos.AutoAcceptSettings;
 import com.jvictor01.matchmaking.MatchmakingService;
 import com.jvictor01.matchmaking.dtos.AutoAccept;
 import com.jvictor01.utils.JsonBodyParser;

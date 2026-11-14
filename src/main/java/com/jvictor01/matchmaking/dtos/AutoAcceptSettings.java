@@ -1,4 +1,4 @@
-package com.jvictor01.matchmaking;
+package com.jvictor01.matchmaking.dtos;
 
 import lombok.Getter;
 

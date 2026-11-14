@@ -3,7 +3,7 @@ package com.jvictor01.websockets.lcu;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jvictor01.gameflow.GameflowStateEnum;
-import com.jvictor01.matchmaking.AutoAcceptSettings;
+import com.jvictor01.matchmaking.dtos.AutoAcceptSettings;
 import com.jvictor01.matchmaking.MatchmakingService;
 import com.jvictor01.utils.trust_manager.SSLContextFactory;
 import com.jvictor01.websockets.frontend_connection.AvailableWebsocketEvents;
