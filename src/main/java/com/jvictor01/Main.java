@@ -13,6 +13,7 @@ import com.jvictor01.websockets.riot_client.RiotClientWebSocketClient;
 import com.jvictor01.websockets.riot_messaging_service.RmsService;
 import com.sun.net.httpserver.HttpServer;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -71,18 +72,19 @@ public class Main {
             e.printStackTrace();
         }
 
-//        if (SystemTray.isSupported()) {
-//            SystemTray tray = SystemTray.getSystemTray();
-//            PopupMenu popup = new PopupMenu();
-//            MenuItem exitItem = new MenuItem("Exit");
-//            exitItem.addActionListener(e -> System.exit(0));
-//            popup.add(exitItem);
-//
-//            Image image = ImageIO.read(Main.class.getResourceAsStream("/image.png"));
-//            TrayIcon trayIcon = new TrayIcon(image, "league-client-enhancer", popup);
-//            trayIcon.setImageAutoSize(true);
-//            tray.add(trayIcon);
-//        }
+        if (SystemTray.isSupported()) {
+            SystemTray tray = SystemTray.getSystemTray();
+            PopupMenu popup = new PopupMenu();
+            MenuItem exitItem = new MenuItem("Exit");
+
+            exitItem.addActionListener(e -> System.exit(0));
+            popup.add(exitItem);
+
+            Image image = ImageIO.read(Main.class.getResourceAsStream("/dummy.png"));
+            TrayIcon trayIcon = new TrayIcon(image, "lcu-client-api", popup);
+            trayIcon.setImageAutoSize(true);
+            tray.add(trayIcon);
+        }
 
     }
 

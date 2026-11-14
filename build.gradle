@@ -31,8 +31,38 @@ dependencies {
     implementation 'org.slf4j:slf4j-simple:2.0.13'
     implementation 'com.google.zxing:core:3.5.4'
     implementation 'com.google.zxing:javase:3.5.4'
+    compileOnly("org.projectlombok:lombok:1.18.46")
+    annotationProcessor("org.projectlombok:lombok:1.18.46")
+
+    testCompileOnly("org.projectlombok:lombok:1.18.46")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.46")
 }
 
+// frontend repo is expected next to this one; override with -PfrontendDir=<path>
+def frontendDir = file(findProperty('frontendDir') ?: '../lcu-client-api-vue')
+
+tasks.register('npmInstall', Exec) {
+    workingDir frontendDir
+    commandLine 'cmd', '/c', 'npm', 'install'
+}
+
+tasks.register('npmBuild', Exec) {
+    dependsOn 'npmInstall'
+    workingDir frontendDir
+    commandLine 'cmd', '/c', 'npm', 'run', 'build'
+}
+
+// Sync (not Copy) removes old hashed vite assets, otherwise they pile up in the jar
+tasks.register('copyFrontend', Sync) {
+    dependsOn 'npmBuild'
+    from "$frontendDir/dist"
+    into "src/main/resources/web"
+}
+
+// without the frontend repo the build still works, using whatever is already in src/main/resources/web
+if (frontendDir.exists()) {
+    tasks.processResources.dependsOn 'copyFrontend'
+}
 
 shadowJar {
     archiveFileName = 'lcu-client-api.jar'
@@ -47,6 +77,65 @@ shadowJar {
 
 tasks.build {
     dependsOn tasks.shadowJar
+}
+
+// Distribution: ./gradlew packageApp -> build/distributions/LCUClient-<version>.zip
+// The zip has LCUClient.exe plus a trimmed Java runtime, so whoever receives it doesn't need Java installed.
+def appName = 'LCUClient'
+def jpackageDir = layout.buildDirectory.dir('jpackage')
+def jdkHome = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(21)
+}.map { it.metadata.installationPath.asFile }
+
+// modules found with: jdeps --ignore-missing-deps --multi-release 21 --print-module-deps build/libs/lcu-client-api.jar
+// jdk.crypto.ec is loaded at runtime for TLS (riot messaging service), so jdeps can't see it
+def runtimeModules = 'java.base,java.desktop,java.net.http,java.sql,jdk.httpserver,jdk.crypto.ec'
+
+tasks.register('jlinkRuntime', Exec) {
+    group = 'distribution'
+    def runtimeDir = jpackageDir.get().dir('runtime').asFile
+    outputs.dir runtimeDir
+    doFirst { delete runtimeDir }
+    commandLine "${jdkHome.get()}/bin/jlink",
+            '--add-modules', runtimeModules,
+            '--strip-debug', '--no-header-files', '--no-man-pages', '--compress=zip-6',
+            '--output', runtimeDir
+}
+
+tasks.register('jpackageImage', Exec) {
+    group = 'distribution'
+    dependsOn 'shadowJar', 'jlinkRuntime'
+    def inputDir = jpackageDir.get().dir('input').asFile
+    def imageDir = jpackageDir.get().dir('image').asFile
+    outputs.dir imageDir
+    doFirst {
+        delete inputDir, imageDir
+        copy {
+            from shadowJar.archiveFile
+            into inputDir
+        }
+    }
+    // --win-console keeps the terminal window open, it shows the connection info and the QR code
+    commandLine "${jdkHome.get()}/bin/jpackage",
+            '--type', 'app-image',
+            '--name', appName,
+            '--app-version', version,
+            '--input', inputDir,
+            '--main-jar', shadowJar.archiveFileName.get(),
+            '--main-class', application.mainClass.get(),
+            '--runtime-image', jpackageDir.get().dir('runtime').asFile,
+            '--win-console',
+            '--dest', imageDir
+}
+
+tasks.register('packageApp', Zip) {
+    group = 'distribution'
+    description = 'Builds frontend + backend and zips LCUClient.exe with its own Java runtime'
+    dependsOn 'jpackageImage'
+    from(jpackageDir.map { it.dir("image/$appName") })
+    into appName
+    archiveFileName = "${appName}-${version}.zip"
+    destinationDirectory = layout.buildDirectory.dir('distributions')
 }
 
 test {
