@@ -82,6 +82,7 @@ public class FriendRequestService {
         HttpResponse<String> response = httpWebClient.buildRequestForLcu(
                 SummonerEndpoints.SUMMONER_BY_PUUID + friendRequest.getPuuid(), HttpMethods.GET);
 
+        //TODO: need to check if this user has account in other riot games like Valorant or LOR etc, if so, it might not be a bot
         if (response.statusCode() == 404) {
             return new BotFriendRequest(friendRequest, null, BotReason.NO_LOL_ACCOUNT);
         }

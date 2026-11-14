@@ -7,6 +7,7 @@ import com.jvictor01.utils.qr_code.QrCodeGenerator;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -160,13 +161,22 @@ public class LeagueApisSetup {
                 "MAKE SURE YOU'RE CONNECTED IN THE SAME NETWORK AS YOUR PC");
 
         try {
-            QrCodeGenerator.printQrCode("http://" + getIp() + ":8080");
+            String url = "http://" + getIp() + ":8080";
+            System.out.println(url);
+            QrCodeGenerator.printQrCode(url);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     public String getIp() throws SocketException {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 53);
+            InetAddress local = socket.getLocalAddress();
+            if (local instanceof Inet4Address && !local.isAnyLocalAddress()) return local.getHostAddress();
+        } catch (Exception ignored) {
+        }
+
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
 
         while (interfaces.hasMoreElements()) {
