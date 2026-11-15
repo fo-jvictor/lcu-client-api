@@ -44,6 +44,10 @@ REST routes:
 
 Websocket events sent to the frontend: queue started/ended, match found, LCU connection lost/restored, and lobby member updates.
 
+## Download
+
+Get `LCUClient-<version>.zip` from the [latest release](https://github.com/fo-jvictor/lcu-client-api/releases/latest), extract it and run `LCUClient\LCUClient.exe`. No Java needed. Allow it when the Windows firewall asks, otherwise your phone can't reach it.
+
 ## Running
 
 Requirements: Windows, JDK 21, and the League of Legends client installed.
