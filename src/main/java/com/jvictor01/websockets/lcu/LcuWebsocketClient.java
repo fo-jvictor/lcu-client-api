@@ -101,7 +101,7 @@ public class LcuWebsocketClient extends WebSocketClient {
             queueNotified = true;
         }
 
-        if (!inQueue) {
+        if (!inQueue && queueNotified) {
             frontendWebsocketConnection
                     .sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_ENDED.getValue());
             queueNotified = false;
@@ -129,6 +129,14 @@ public class LcuWebsocketClient extends WebSocketClient {
     }
 
     private void handleGameflowPhase(String phase) {
+        boolean matchmakingOrReadyCheckPhase = GameflowStateEnum.MATCHMAKING.getState().equalsIgnoreCase(phase)
+                || GameflowStateEnum.READY_CHECK.getState().equalsIgnoreCase(phase);
+        if (!matchmakingOrReadyCheckPhase) {
+            queueNotified = false;
+            readyCheckNotified = false;
+            frontendWebsocketConnection.sendMessage(AvailableWebsocketEvents.SEARCH_STATE_QUEUE_ENDED.getValue());
+        }
+
         boolean inChampSelect = GameflowStateEnum.CHAMP_SELECT.getState().equalsIgnoreCase(phase);
 
         if (inChampSelect && !champSelectNotified) {
