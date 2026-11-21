@@ -22,8 +22,9 @@ jobs:
         shell: bash
         run: ./gradlew.bat packageApp -PappVersion="${GITHUB_REF_NAME#v}"
 
+      # release notes = the annotated tag message: git tag -a v1.2.0 -F notes.md
       - name: Publish release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" build/distributions/LCUClient-*.zip --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" build/distributions/LCUClient-*.zip --title "$GITHUB_REF_NAME" --notes-from-tag
