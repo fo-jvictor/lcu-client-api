@@ -1,11 +1,13 @@
 package com.jvictor01.lobby.team_builder.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ChampSelectSession {
     private long gameId;
     private Timer timer;
