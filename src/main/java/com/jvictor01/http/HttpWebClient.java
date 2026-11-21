@@ -17,16 +17,12 @@ import static com.jvictor01.app_setup.LeagueApisSetup.*;
 public class HttpWebClient {
     private final HttpClient httpClient;
     private final ObjectMapper objectMapper;
-    private final HttpRequest.Builder httpRequest;
 
     public HttpWebClient() {
         this.httpClient = HttpClient.newBuilder()
                 .sslContext(SSLContextFactory.createTrustAllSSLContext())
                 .build();
         this.objectMapper = new ObjectMapper();
-        this.httpRequest = HttpRequest.newBuilder()
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json");
     }
 
     public HttpResponse<String> buildRequestForLcu(String endpoint, HttpMethods method, Object requestBody) {
@@ -42,26 +38,28 @@ public class HttpWebClient {
     }
 
     private HttpResponse<String> buildAndExecuteRequestBy(String endpoint, AvailableApis api, HttpMethods method, Object requestBody) {
+        HttpRequest.Builder httpRequestBuilder = HttpRequest.newBuilder()
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json");
         if (api == null || Objects.equals(api.getValue(), AvailableApis.LCU.getValue())) {
             URI uri = URI.create(LOCAL_HOST + LCU_SERVER_PORT + endpoint);
-            this.httpRequest.uri(uri);
-            this.httpRequest.header("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN);
+            httpRequestBuilder.uri(uri);
+            httpRequestBuilder.setHeader("Authorization", "Basic " + LCU_AUTHORIZATION_TOKEN);
         } else if (Objects.equals(api.getValue(), AvailableApis.RIOT_CLIENT.getValue())) {
             URI uri = URI.create(LOCAL_HOST + RIOT_CLIENT_SERVER_PORT + endpoint);
-            this.httpRequest.uri(uri);
-            this.httpRequest.header("Authorization", "Basic " + RIOT_CLIENT_AUTH_TOKEN);
+            httpRequestBuilder.uri(uri);
+            httpRequestBuilder.setHeader("Authorization", "Basic " + RIOT_CLIENT_AUTH_TOKEN);
         }
 
         if (requestBody == null) {
-            this.httpRequest.method(method.getValue(), HttpRequest.BodyPublishers.noBody()).build();
+            httpRequestBuilder.method(method.getValue(), HttpRequest.BodyPublishers.noBody());
         } else {
-            this.httpRequest.method(method.getValue(),
-                            HttpRequest.BodyPublishers.ofString(writeRequestBody(requestBody), StandardCharsets.UTF_8))
-                    .build();
+            httpRequestBuilder.method(method.getValue(),
+                    HttpRequest.BodyPublishers.ofString(writeRequestBody(requestBody), StandardCharsets.UTF_8));
         }
 
         try {
-            return this.httpClient.send(this.httpRequest.build(), HttpResponse.BodyHandlers.ofString());
+            return this.httpClient.send(httpRequestBuilder.build(), HttpResponse.BodyHandlers.ofString());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
